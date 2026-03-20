@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+ 
+@import "tailwindcss";
+ 
+@theme {
+  --color-coral: #FF6B6B;
+  --color-coral-light: #FF8E8E;
+  --color-coral-dark: #E55555;
+  --color-navy: #1A1A2E;
+  --color-navy-light: #2D2D44;
+  --color-navy-lighter: #3A3A55;
+  --color-cream: #FFF8F0;
+  --color-cream-dark: #F0E6D6;
+  --color-gray-warm: #9CA3AF;
+ 
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+ 
+html {
+  font-family: var(--font-body);
+}
+ 
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+ 
+body {
+  @apply bg-cream text-navy;
+}
+ 
+body.dark {
+  @apply bg-navy text-cream;
+}
+ 
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+ 
+/* Mobile viewport fix */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
