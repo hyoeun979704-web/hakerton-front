@@ -1,325 +1,331 @@
-import { motion } from 'framer-motion';
-import type { HTMLMotionProps } from 'framer-motion';
-import {
-  ArrowRight, MapPin, Sparkles, Navigation, Globe2, Compass,
-  Zap, Coffee, Train, MessageCircle, CheckCircle2, Users, Star, Shield
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { MapPin, Search, Heart, Bookmark, ChevronRight, Star } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { TIPS, SITUATIONS, getSavedIds, toggleSaved, type TipCategory, type TipItem } from '../data/tips';
+import type { Translations } from '../context/AppContext';
 
-const fadeUp: HTMLMotionProps<'section'> = {
-  initial: { opacity: 0, y: 24 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-40px' },
-  transition: { duration: 0.5, ease: 'easeOut' },
-};
+type SortMode = 'recommend' | 'latest' | 'popular';
+type CategoryFilter = 'All' | TipCategory;
 
-export default function Home() {
-  const navigate = useNavigate();
-  const { t } = useApp();
-  const h = t.home;
+const CATEGORY_FILTERS: CategoryFilter[] = ['All', 'Transport', 'Food', 'Culture', 'Shopping', 'Nightlife', 'Emergency'];
+
+// ---- TipCard sub-component ----
+interface TipCardProps {
+  tip: TipItem;
+  lang: string;
+  t: Translations;
+  savedIds: Set<number>;
+  likedIds: Set<number>;
+  expandedId: number | null;
+  onSave: (id: number) => void;
+  onLike: (id: number) => void;
+  onExpand: (id: number | null) => void;
+}
+
+function TipCard({ tip, lang, t, savedIds, likedIds, expandedId, onSave, onLike, onExpand }: TipCardProps) {
+  const content = lang === 'ko' ? tip.contentKo : tip.contentEn;
+  const isExpanded = expandedId === tip.id;
+  const isLong = content.length > 90;
+  const isSaved = savedIds.has(tip.id);
+  const isLiked = likedIds.has(tip.id);
+
+  const categoryStyle =
+    tip.category === 'Food' ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400' :
+    tip.category === 'Transport' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400' :
+    tip.category === 'Culture' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400' :
+    tip.category === 'Emergency' ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400' :
+    tip.category === 'Nightlife' ? 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-400' :
+    tip.category === 'Shopping' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' :
+    'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300';
 
   return (
-    <div className="bg-white dark:bg-[#0A0A0E] min-h-screen">
-
-      {/* ── 1. HERO ── */}
-      <section className="relative pt-20 pb-16 px-6 overflow-hidden min-h-[88vh] flex flex-col justify-center">
-        {/* Background blobs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            className="absolute -top-16 -right-20 w-72 h-72 bg-blue-400/20 dark:bg-blue-600/15 rounded-full blur-[80px]"
-            animate={{ scale: [1, 1.08, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute top-40 -left-16 w-56 h-56 bg-indigo-400/15 dark:bg-indigo-600/10 rounded-full blur-[60px]"
-            animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.9, 0.5] }}
-            transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-          />
-        </div>
-
-        <div className="relative z-10 pt-8">
-          {/* Tag */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 text-xs font-bold uppercase tracking-wide mb-6 border border-blue-200 dark:border-blue-500/25"
-          >
-            <Sparkles size={12} /> {h.heroTag}
-          </motion.div>
-
-          {/* App Icon */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.05 }}
-            className="w-16 h-16 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-6 shadow-2xl shadow-blue-500/30"
-          >
-            <Globe2 className="w-8 h-8 text-white" />
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.08] mb-5 whitespace-pre-line"
-          >
-            {h.heroTitle}
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.18 }}
-            className="text-base text-slate-600 dark:text-slate-400 font-medium mb-10 leading-relaxed max-w-[300px]"
-          >
-            {h.heroSubtitle}
-          </motion.p>
-
-          {/* Primary CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.26 }}
-          >
-            <button
-              onClick={() => navigate('/onboarding')}
-              className="group flex items-center justify-between w-full p-1.5 bg-slate-900 dark:bg-white rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-xl shadow-slate-900/20 dark:shadow-white/10"
-            >
-              <span className="pl-5 font-bold text-white dark:text-slate-900 text-sm">{h.heroCta}</span>
-              <div className="w-11 h-11 bg-blue-500 rounded-xl flex items-center justify-center group-hover:bg-blue-400 transition-colors flex-shrink-0">
-                <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-0.5 transition-transform" />
-              </div>
-            </button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── 2. STATS BAR ── */}
-      <motion.section
-        {...fadeUp}
-        className="px-6 py-5 border-y border-slate-100 dark:border-slate-800/60"
-      >
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { icon: Users, value: '12K+', label: h.statsUsers },
-            { icon: Star, value: '3.8K+', label: h.statsTips },
-            { icon: Shield, value: '240+', label: h.statsExperts },
-          ].map(({ icon: Icon, value, label }) => (
-            <div key={label} className="flex flex-col items-center gap-1 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-              <Icon size={16} className="text-blue-500 dark:text-blue-400" />
-              <span className="text-lg font-black text-slate-900 dark:text-white leading-none">{value}</span>
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 text-center leading-tight">{label}</span>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="px-4 pt-4 pb-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 bg-gradient-to-br ${tip.avatarColor}`}>
+              {tip.authorInitials}
             </div>
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{tip.author}</span>
+            {tip.isExpert && (
+              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/15 px-1.5 py-0.5 rounded-full">
+                {t.tips.localExpert}
+              </span>
+            )}
+          </div>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${categoryStyle}`}>
+            {t.categories[tip.category]}
+          </span>
+        </div>
+
+        <h3 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug mb-1.5">{tip.titleKo}</h3>
+        <p className={`text-xs text-slate-600 dark:text-slate-400 leading-relaxed ${!isExpanded && isLong ? 'line-clamp-2' : ''}`}>
+          {content}
+        </p>
+        {isLong && (
+          <button
+            onClick={() => onExpand(isExpanded ? null : tip.id)}
+            className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 mt-1"
+          >
+            {isExpanded ? t.tips.readLess : t.tips.readMore}
+          </button>
+        )}
+      </div>
+
+      <div className="px-4 pb-3 flex items-center justify-between mt-1">
+        <div className="flex gap-2 flex-wrap">
+          {tip.tags.slice(0, 3).map(tag => (
+            <span key={tag} className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{tag}</span>
           ))}
         </div>
-      </motion.section>
-
-      {/* ── 3. REAL-TIME PULSE ── */}
-      <motion.section {...fadeUp} className="px-6 py-14">
-        {/* Section Header */}
-        <div className="mb-7">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-200 dark:border-emerald-500/20">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            {h.pulseTag}
-          </div>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 leading-tight whitespace-pre-line">
-            {h.pulseTitle}
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{h.pulseSubtitle}</p>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={() => onLike(tip.id)}
+            className={`flex items-center gap-1 text-[11px] font-semibold transition-colors ${isLiked ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'}`}
+          >
+            <Heart size={14} fill={isLiked ? 'currentColor' : 'none'} />
+            {tip.likes + (isLiked ? 1 : 0)}
+          </button>
+          <button
+            onClick={() => onSave(tip.id)}
+            className={`p-1 transition-colors ${isSaved ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
+          >
+            <Bookmark size={15} fill={isSaved ? 'currentColor' : 'none'} />
+          </button>
         </div>
+      </div>
+    </div>
+  );
+}
 
-        {/* Widget Preview */}
-        <div className="bg-slate-50 dark:bg-slate-900/60 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm mb-5 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+// ---- Main Home page ----
+export default function Home() {
+  const { t, lang } = useApp();
+  const ht = t.home;
+  const [searchParams] = useSearchParams();
+  const situationParam = searchParams.get('situation');
 
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                <MapPin className="text-emerald-600 dark:text-emerald-400 w-5 h-5" />
-              </div>
-              <div>
-                <p className="font-bold text-slate-900 dark:text-white text-sm">{h.samplePlace}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{h.samplePlaceDesc}</p>
-              </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-2xl font-black text-slate-900 dark:text-white">12m</p>
-              <p className="text-[10px] font-bold text-slate-500 uppercase">{h.avgWait}</p>
-            </div>
-          </div>
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('All');
+  const [sortMode, setSortMode] = useState<SortMode>('recommend');
+  const [savedIds, setSavedIds] = useState<Set<number>>(getSavedIds);
+  const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
-          <div className="mb-2 flex justify-between items-end">
-            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{h.localRatio}</span>
-            <span className="text-base font-black text-emerald-600 dark:text-emerald-400">82%</span>
-          </div>
-          <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full"
-              initial={{ width: 0 }}
-              whileInView={{ width: '82%' }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
-            />
-          </div>
+  useEffect(() => {
+    if (situationParam) setActiveCategory('All');
+  }, [situationParam]);
+
+  const handleSave = (id: number) => {
+    toggleSaved(id);
+    setSavedIds(getSavedIds());
+  };
+
+  const handleLike = (id: number) => {
+    setLikedIds(prev => {
+      const s = new Set(prev);
+      if (s.has(id)) s.delete(id); else s.add(id);
+      return s;
+    });
+  };
+
+  const filteredTips = TIPS
+    .filter(tip => {
+      if (situationParam) return tip.situations.includes(situationParam);
+      return activeCategory === 'All' || tip.category === activeCategory;
+    })
+    .sort((a, b) => {
+      if (sortMode === 'popular') return b.likes - a.likes;
+      if (sortMode === 'latest') return b.id - a.id;
+      return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0) || b.likes - a.likes;
+    });
+
+  const featuredTip = TIPS.find(tip => tip.isFeatured);
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0A0E] pt-14 pb-24">
+      {/* City + search bar */}
+      <div className="bg-white dark:bg-slate-900 px-4 pt-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between mb-3">
+          <button className="flex items-center gap-1.5 text-slate-900 dark:text-white font-extrabold text-base">
+            <MapPin size={16} className="text-blue-500" />
+            {ht.citySelector}
+          </button>
+          <span className="text-xs text-slate-400 font-medium">{TIPS.length} {ht.cityTipCount}</span>
         </div>
-
-        {/* CTA */}
-        <button
-          onClick={() => navigate('/tips')}
-          className="w-full py-4 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold text-sm flex items-center justify-center gap-2 hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-600 dark:hover:text-blue-400 transition-all active:scale-[0.98]"
+        <Link
+          to="/search"
+          className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-2.5 text-slate-400 dark:text-slate-500 text-sm"
         >
-          <Navigation size={17} /> {h.pulseCta}
-        </button>
-      </motion.section>
+          <Search size={15} />
+          <span>{ht.searchPlaceholder}</span>
+        </Link>
+      </div>
 
-      {/* ── 4. SITUATIONAL ASSIST ── */}
-      <motion.section
-        {...fadeUp}
-        className="px-6 py-14 bg-gradient-to-b from-blue-50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/10 border-y border-blue-100 dark:border-blue-900/30"
-      >
-        <div className="mb-7">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider mb-4 border border-blue-200 dark:border-blue-500/30">
-            <Zap size={11} fill="currentColor" /> {h.translateTag}
+      {/* Event banner */}
+      <div className="mx-4 mt-4">
+        <Link to="/situations" className="flex items-center justify-between bg-gradient-to-r from-pink-500 to-rose-400 rounded-2xl px-5 py-3.5 shadow-md shadow-pink-500/20">
+          <div>
+            <p className="font-extrabold text-white text-sm">{ht.eventBanner}</p>
+            <p className="text-pink-100 text-xs mt-0.5 font-medium">{ht.eventBannerSub}</p>
           </div>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 leading-tight whitespace-pre-line">
-            {h.translateTitle}
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{h.translateSubtitle}</p>
-        </div>
+          <ChevronRight size={18} className="text-white/80" />
+        </Link>
+      </div>
 
-        {/* Situation Cards */}
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          {[
-            {
-              icon: Coffee,
-              color: 'orange',
-              title: h.restaurantGuide,
-              desc: h.restaurantDesc,
-            },
-            {
-              icon: Train,
-              color: 'indigo',
-              title: h.transitGuide,
-              desc: h.transitDesc,
-            },
-          ].map(({ icon: Icon, color, title, desc }) => (
-            <div
-              key={title}
-              className="bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col gap-3 hover:shadow-md transition-shadow"
-            >
-              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 bg-${color}-100 dark:bg-${color}-500/20 text-${color}-600 dark:text-${color}-400`}>
-                <Icon size={22} strokeWidth={2.2} />
+      {/* I'm at a... */}
+      <div className="px-4 mt-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-extrabold text-slate-900 dark:text-white text-sm">{ht.iAmAt}</h2>
+          <Link to="/situations" className="text-xs font-bold text-blue-600 dark:text-blue-400">{ht.seeMore}</Link>
+        </div>
+        <div className="grid grid-cols-3 gap-2.5">
+          {SITUATIONS.slice(0, 6).map(({ id, emoji }, idx) => {
+            const label = t.situations[id as keyof typeof t.situations] as string;
+            const isActive = situationParam === id;
+            return (
+              <motion.div key={id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.05 }}>
+                <Link
+                  to={isActive ? '/' : `/?situation=${id}`}
+                  className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl border transition-all text-center ${
+                    isActive
+                      ? 'bg-blue-600 border-blue-600 shadow-md'
+                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700'
+                  }`}
+                >
+                  <span className="text-2xl">{emoji}</span>
+                  <span className={`text-[10px] font-bold leading-tight ${isActive ? 'text-white' : 'text-slate-700 dark:text-slate-300'}`}>{label}</span>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Situation filter label */}
+      <AnimatePresence>
+        {situationParam && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="mx-4 mt-4 flex items-center justify-between bg-blue-50 dark:bg-blue-500/10 rounded-xl px-4 py-2.5"
+          >
+            <p className="text-xs font-bold text-blue-700 dark:text-blue-400">
+              {SITUATIONS.find(s => s.id === situationParam)?.emoji}{' '}
+              {t.situations[situationParam as keyof typeof t.situations] as string} 관련 꿀팁
+            </p>
+            <Link to="/" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">✕ 전체보기</Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Today's Pick (featured) */}
+      {featuredTip && !situationParam && activeCategory === 'All' && (
+        <div className="px-4 mt-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Star size={14} className="text-amber-400 fill-amber-400" />
+            <h2 className="font-extrabold text-slate-900 dark:text-white text-sm">{ht.todayPick}</h2>
+          </div>
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-4 shadow-lg shadow-blue-500/20">
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold bg-gradient-to-br ${featuredTip.avatarColor} border-2 border-white/20`}>
+                {featuredTip.authorInitials}
               </div>
-              <div>
-                <p className="font-bold text-slate-900 dark:text-white text-sm leading-tight">{title}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 leading-snug">{desc}</p>
-              </div>
+              <span className="text-white/80 text-xs font-semibold">{featuredTip.author}</span>
+              <span className="text-[10px] font-bold bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-full">PICK</span>
             </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <button className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25 transition-colors active:scale-[0.98]">
-          <Sparkles size={17} /> {h.translateCta}
-        </button>
-      </motion.section>
-
-      {/* ── 5. AUTHENTIC TIPS ── */}
-      <motion.section {...fadeUp} className="px-6 py-14">
-        <div className="mb-7">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 text-xs font-bold uppercase tracking-wider mb-4 border border-purple-200 dark:border-purple-500/30">
-            <MessageCircle size={11} fill="currentColor" /> {h.tipsTag}
+            <h3 className="font-extrabold text-white text-sm leading-snug mb-2">{featuredTip.titleKo}</h3>
+            <p className="text-blue-100 text-xs leading-relaxed line-clamp-3">
+              {lang === 'ko' ? featuredTip.contentKo : featuredTip.contentEn}
+            </p>
+            <div className="flex items-center justify-between mt-3">
+              <div className="flex gap-1.5">
+                {featuredTip.tags.slice(0, 2).map(tag => (
+                  <span key={tag} className="text-[10px] font-semibold text-blue-200 bg-white/10 px-2 py-0.5 rounded-full">{tag}</span>
+                ))}
+              </div>
+              <button
+                onClick={() => handleSave(featuredTip.id)}
+                className={`p-1.5 rounded-full transition-colors ${savedIds.has(featuredTip.id) ? 'text-amber-300' : 'text-white/50 hover:text-white'}`}
+              >
+                <Bookmark size={15} fill={savedIds.has(featuredTip.id) ? 'currentColor' : 'none'} />
+              </button>
+            </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 leading-tight whitespace-pre-line">
-            {h.tipsTitle}
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{h.tipsSubtitle}</p>
         </div>
+      )}
 
-        {/* Category Chips */}
-        <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-6 px-6 hide-scrollbar">
-          {['😎 Local Verified', '🍜 Foodie', '📸 Photo Spot', '🛍️ Secret Shop'].map((chip, idx) => (
-            <div
-              key={idx}
-              className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold border transition-colors flex-shrink-0 ${
-                idx === 0
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent shadow-md'
-                  : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
+      {/* Category chips + sort */}
+      {!situationParam && (
+        <div className="flex gap-2 px-4 mt-5 overflow-x-auto hide-scrollbar pb-1">
+          {CATEGORY_FILTERS.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`flex-shrink-0 text-xs font-bold px-3.5 py-1.5 rounded-full transition-all ${
+                activeCategory === cat
+                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                  : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
               }`}
             >
-              {chip}
-            </div>
+              {t.categories[cat === 'All' ? 'All' : cat as TipCategory]}
+            </button>
           ))}
         </div>
+      )}
 
-        {/* Sample Tip Card */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm mb-5">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-              JH
+      {/* Tips feed */}
+      <div className="px-4 mt-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-extrabold text-slate-900 dark:text-white text-sm">{ht.latestTips}</h2>
+          {!situationParam && (
+            <div className="flex gap-1">
+              {(['recommend', 'latest', 'popular'] as SortMode[]).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setSortMode(mode)}
+                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition-colors ${
+                    sortMode === mode
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-400 dark:text-slate-500'
+                  }`}
+                >
+                  {ht[mode]}
+                </button>
+              ))}
             </div>
-            <div>
-              <p className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1">
-                {h.sampleTipAuthor}
-                <CheckCircle2 size={13} className="text-blue-500" />
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{h.sampleTipExpert}</p>
-            </div>
-          </div>
-          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-            {h.sampleTipContent}
-          </p>
+          )}
         </div>
 
-        {/* CTA */}
-        <button
-          onClick={() => navigate('/tips')}
-          className="w-full py-4 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold text-sm flex items-center justify-center gap-2 hover:border-purple-300 dark:hover:border-purple-700 hover:text-purple-600 dark:hover:text-purple-400 transition-all active:scale-[0.98]"
-        >
-          <Compass size={17} /> {h.tipsCta}
-        </button>
-      </motion.section>
-
-      {/* ── 6. AI TRAVEL PERSONA ── */}
-      <motion.section
-        {...fadeUp}
-        className="px-6 py-14 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/40 dark:to-[#0A0A0E] border-t border-slate-100 dark:border-slate-800/60"
-      >
-        <div className="mb-7">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 border border-amber-200 dark:border-amber-500/25">
-            <Sparkles size={11} fill="currentColor" /> {h.personaTag}
-          </div>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 leading-tight whitespace-pre-line">
-            {h.personaTitle}
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{h.personaSubtitle}</p>
+        <div className="space-y-3">
+          {filteredTips.length === 0 ? (
+            <p className="text-center text-slate-400 py-8 text-sm">{t.tips.empty}</p>
+          ) : (
+            filteredTips.map((tip, idx) => (
+              <motion.div
+                key={tip.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.04 }}
+              >
+                <TipCard
+                  tip={tip}
+                  lang={lang}
+                  t={t}
+                  savedIds={savedIds}
+                  likedIds={likedIds}
+                  expandedId={expandedId}
+                  onSave={handleSave}
+                  onLike={handleLike}
+                  onExpand={setExpandedId}
+                />
+              </motion.div>
+            ))
+          )}
         </div>
-
-        {/* Persona Preview Cards */}
-        <div className="relative mb-6 h-24">
-          {[
-            { emoji: '🐢', label: '여유파', color: 'from-emerald-400 to-teal-500', offset: 'left-0' },
-            { emoji: '⚡', label: '핫플 정복', color: 'from-orange-400 to-red-500', offset: 'left-[30%]' },
-            { emoji: '🍖', label: 'K-BBQ', color: 'from-red-400 to-pink-500', offset: 'left-[60%]' },
-          ].map(({ emoji, label, color, offset }) => (
-            <div
-              key={label}
-              className={`absolute ${offset} w-20 h-20 rounded-3xl bg-gradient-to-br ${color} shadow-lg flex flex-col items-center justify-center gap-1`}
-            >
-              <span className="text-2xl">{emoji}</span>
-              <span className="text-[9px] font-bold text-white/90">{label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <button
-          onClick={() => navigate('/onboarding')}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25 transition-all active:scale-[0.98]"
-        >
-          <Sparkles size={17} /> {h.personaCta}
-          <ArrowRight size={17} className="ml-1" />
-        </button>
-      </motion.section>
-
-      {/* Bottom spacer */}
-      <div className="h-6" />
+      </div>
     </div>
   );
 }

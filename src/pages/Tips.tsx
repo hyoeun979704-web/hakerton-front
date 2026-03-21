@@ -89,7 +89,7 @@ export default function Tips() {
   };
 
   const getCategoryLabel = (cat: string) => {
-    return tt.categories[cat as keyof typeof tt.categories] || cat;
+    return t.categories[cat as keyof typeof t.categories] || cat;
   };
 
   return (
