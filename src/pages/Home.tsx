@@ -4,7 +4,7 @@ import type { HTMLMotionProps } from 'framer-motion';
 import {
   ArrowRight, Sparkles, Compass,
   Users, Star, AlertTriangle, Bookmark,
-  Clock, Bot, ChevronRight,
+  Clock, Bot, ChevronRight, ChevronLeft,
   Flame, Globe2, Heart
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -151,25 +151,24 @@ export default function Home() {
               <span className="text-xs font-extrabold text-white tracking-widest uppercase">Seoul NOW</span>
               <span className="text-[10px] font-bold text-slate-500 uppercase">실시간 혼잡도</span>
             </div>
-            <div className="flex gap-1">
-              {VENUE_PAIRS.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActivePair(i)}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors ${activePair === i ? 'bg-blue-400' : 'bg-slate-700'}`}
-                />
-              ))}
-            </div>
+            <span className="text-[10px] text-slate-500 font-medium">{activePair + 1} / {VENUE_PAIRS.length}</span>
           </div>
 
           <AnimatePresence mode="wait">
             <motion.div
               key={activePair}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.15}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -50) setActivePair(p => Math.min(p + 1, VENUE_PAIRS.length - 1));
+                if (info.offset.x > 50)  setActivePair(p => Math.max(p - 1, 0));
+              }}
               initial={{ opacity: 0, x: 12 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -12 }}
               transition={{ duration: 0.25 }}
-              className="grid grid-cols-2 divide-x divide-slate-800"
+              className="grid grid-cols-2 divide-x divide-slate-800 cursor-grab active:cursor-grabbing select-none"
             >
               {/* SNS 핫플 */}
               <div className="p-4">
@@ -256,9 +255,33 @@ export default function Home() {
             </motion.div>
           </AnimatePresence>
 
-          {/* swipe hint + CTA */}
-          <div className="px-5 pb-4 pt-3 border-t border-slate-800 flex items-center justify-between">
-            <p className="text-[10px] text-slate-600">← 좌우로 넘겨보세요</p>
+          {/* arrow nav + CTA */}
+          <div className="px-4 pb-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setActivePair(p => Math.max(p - 1, 0))}
+                disabled={activePair === 0}
+                className="w-7 h-7 rounded-full flex items-center justify-center bg-slate-800 disabled:opacity-25 hover:bg-slate-700 transition-colors"
+              >
+                <ChevronLeft size={13} className="text-white" />
+              </button>
+              <div className="flex gap-1.5">
+                {VENUE_PAIRS.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActivePair(i)}
+                    className={`rounded-full transition-all ${activePair === i ? 'w-4 h-2 bg-blue-400' : 'w-2 h-2 bg-slate-700'}`}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={() => setActivePair(p => Math.min(p + 1, VENUE_PAIRS.length - 1))}
+                disabled={activePair === VENUE_PAIRS.length - 1}
+                className="w-7 h-7 rounded-full flex items-center justify-center bg-slate-800 disabled:opacity-25 hover:bg-slate-700 transition-colors"
+              >
+                <ChevronRight size={13} className="text-white" />
+              </button>
+            </div>
             <Link to="/tips" className="flex items-center gap-1 text-[11px] font-bold text-blue-400">
               전체 명소 보기 <ChevronRight size={12} />
             </Link>
