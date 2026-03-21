@@ -1,99 +1,135 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { MapPin, Users, Clock, Coffee, Train, Navigation, AlertCircle } from 'lucide-react';
-import reactLogo from '../assets/react.svg';
-import viteLogo from '../assets/vite.svg';
-import heroImg from '../assets/hero.png';
-import '../App.css'; // Restore the original attractive landing page styles
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { MapPin, Users, Clock, Coffee, Train, Navigation, AlertCircle, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+
+// Typewriter effect hook
+function useTypewriter(text: string, speed = 50, startDelay = 0) {
+  const [displayed, setDisplayed] = useState('');
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
+    let idx = 0;
+    setDisplayed('');
+    const type = () => {
+      if (idx < text.length) {
+        setDisplayed(text.substring(0, idx + 1));
+        idx++;
+        timeout = setTimeout(type, speed);
+      }
+    };
+    const start = setTimeout(type, startDelay);
+    return () => { clearTimeout(timeout); clearTimeout(start); };
+  }, [text, speed, startDelay]);
+  return displayed;
+}
 
 export default function Home() {
-  const [count, setCount] = useState(0);
+  const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Parallax for background
+  const { scrollYProgress } = useScroll({ target: containerRef });
+  const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
+
+  // Live Demo State Machine Sequence
+  const [demoPhase, setDemoPhase] = useState(0); 
+  const questionText = "외국인 친구한테 '치맥' 문화를 어떻게 설명하지?";
+
+  useEffect(() => {
+    const cycle = async () => {
+      setDemoPhase(0);
+      await new Promise(r => setTimeout(r, 1000));
+      setDemoPhase(1); // Start typing
+      await new Promise(r => setTimeout(r, 2500));
+      setDemoPhase(2); // Analyzing
+      await new Promise(r => setTimeout(r, 1500));
+      setDemoPhase(3); // Result
+      await new Promise(r => setTimeout(r, 6000));
+      cycle();
+    };
+    cycle();
+  }, []);
+
+  const typedQuestion = useTypewriter(demoPhase >= 1 ? questionText : '', 50, 0);
 
   return (
-    <div className="min-h-screen pb-24 bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950">
-      
-      {/* ORIGINAL LOCALFLOW LANDING PAGE RESTORED */}
-      <div className="original-landing-wrapper">
-        <section id="center">
-          <div className="hero">
-            <img src={heroImg} className="base" width="170" height="179" alt="" />
-            <img src={reactLogo} className="framework" alt="React logo" />
-            <img src={viteLogo} className="vite" alt="Vite logo" />
-          </div>
-          <div>
-            <h1>Localflow</h1>
-            <p>
-              Flow like a local in Seoul. Experience the true vibe.
-            </p>
-          </div>
-          <button
-            className="counter"
-            onClick={() => setCount((count) => count + 1)}
+    <div ref={containerRef} className="pb-24 overflow-hidden bg-[#FAFAFA] dark:bg-[#0F0F1A] text-slate-50 min-h-screen">
+      {/* 1. HERO SECTION (Original LocalFlow Landing) */}
+      <section className="relative pt-20 pb-16 px-6 min-h-[85vh] flex flex-col justify-center">
+        {/* Animated Background Gradients */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+          <motion.div 
+            style={{ y: yBg }}
+            className="absolute -top-20 -right-20 w-96 h-96 bg-rose-500/20 rounded-full blur-[100px]" 
+          />
+          <motion.div 
+            style={{ y: yBg }}
+            className="absolute top-40 -left-20 w-80 h-80 bg-blue-600/20 rounded-full blur-[100px]" 
+          />
+        </div>
+
+        <div className="relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
           >
-            Vibes matched: {count}
-          </button>
-        </section>
+            <span className="px-3 py-1 text-xs font-semibold bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/30 mb-6 inline-block">
+              AI Culture Translation
+            </span>
+            <h1 className="text-5xl font-extrabold leading-tight mb-4">
+              Flow like a <span className="bg-gradient-to-r from-blue-400 to-rose-400 bg-clip-text text-transparent">Local</span><br/>
+              in Seoul.
+            </h1>
+            <p className="text-slate-400 text-lg">
+              딥 로컬들의 생생한 팁과 AI 어시스턴트로 완벽한 서울 여행을 경험하세요.
+            </p>
+          </motion.div>
 
-        <div className="ticks"></div>
+          {/* AI Demo Box */}
+          <div className="glass rounded-3xl p-5 border border-white/10 shadow-2xl bg-black/40 backdrop-blur-xl">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="text-blue-400 w-5 h-5" />
+              <span className="font-semibold text-sm">Local Assistant</span>
+            </div>
+            
+            <div className="bg-white/5 rounded-2xl p-4 min-h-[80px] mb-4 text-left border border-white/5">
+              <p className="text-slate-200">
+                {demoPhase >= 1 ? typedQuestion : <span className="text-slate-600">질문을 입력해 주세요...</span>}
+                {demoPhase === 1 && <span className="animate-pulse ml-1 inline-block w-2 h-4 bg-blue-400" />}
+              </p>
+            </div>
 
-        <section id="next-steps">
-          <div id="docs">
-            <svg className="icon" role="presentation" aria-hidden="true">
-              <use href="/icons.svg#documentation-icon"></use>
-            </svg>
-            <h2>AI Assistant</h2>
-            <p>Your cultural questions, answered instantly</p>
-            <ul>
-              <li>
-                <a href="#" onClick={(e) => e.preventDefault()}>
-                  <img className="logo" src={viteLogo} alt="" />
-                  Try AI Translator
-                </a>
-              </li>
-              <li>
-                <a href="#" onClick={(e) => e.preventDefault()}>
-                  <img className="button-icon" src={reactLogo} alt="" />
-                  Learn Local Nuances
-                </a>
-              </li>
-            </ul>
+            <AnimatePresence mode="wait">
+              {demoPhase === 2 && (
+                <motion.div 
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="flex items-center gap-2 text-blue-400 text-sm justify-center py-4"
+                >
+                  <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400" />
+                  로컬 맥락 분석 중...
+                </motion.div>
+              )}
+              {demoPhase === 3 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                  className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 text-left"
+                >
+                  <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                    "치맥(Chimaek)은 치킨과 맥주의 합성어로, 단순한 식사가 아닌 퇴근 후 동료들과의 유대감을 다지는 한국의 대표 소울 푸드 문화입니다. 한강공원에서 돗자리를 펴고 배달시켜 먹는 코스를 추천해요!"
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <div id="social">
-            <svg className="icon" role="presentation" aria-hidden="true">
-              <use href="/icons.svg#social-icon"></use>
-            </svg>
-            <h2>Connect with Locals</h2>
-            <p>Join the Localflow community</p>
-            <ul>
-              <li>
-                <a href="#" onClick={(e) => e.preventDefault()}>
-                  <svg className="button-icon" role="presentation" aria-hidden="true">
-                    <use href="/icons.svg#github-icon"></use>
-                  </svg>
-                  Community
-                </a>
-              </li>
-              <li>
-                <a href="#" onClick={(e) => e.preventDefault()}>
-                  <svg className="button-icon" role="presentation" aria-hidden="true">
-                    <use href="/icons.svg#discord-icon"></use>
-                  </svg>
-                  Meetups
-                </a>
-              </li>
-            </ul>
-          </div>
-        </section>
+        </div>
+      </section>
 
-        <div className="ticks"></div>
-        <section id="spacer"></section>
-      </div>
-
-      {/* NEW INTEGRATED FEATURES (App 4 & 5) */}
-      <div className="px-6 relative -mt-10 z-10">
+      {/* --- INTEGRATION SECTIONS (App 4 & App 5) --- */}
+      <div className="px-6 relative z-10 space-y-12">
         
         {/* App 4 Feature: Live Locality Pulse (Seoul Now) */}
-        <section className="mb-10">
+        <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <span className="relative flex h-3 w-3">
@@ -102,55 +138,49 @@ export default function Home() {
               </span>
               Seoul Now
             </h2>
-            <span className="text-xs text-slate-500">Live Pulse</span>
+            <span className="text-xs text-slate-400 font-medium">Live Pulse</span>
           </div>
           
           <motion.div 
-            className="glass rounded-3xl p-5 relative overflow-hidden group border border-white/10"
+            className="glass rounded-3xl p-5 relative overflow-hidden group border border-white/5 bg-slate-900/50 shadow-xl"
             whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-10 -mt-10 transition-all group-hover:bg-blue-500/20" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 transition-all group-hover:bg-emerald-500/20" />
             
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-slate-800/50 rounded-2xl">
-                <MapPin className="text-blue-400 w-6 h-6" />
+              <div className="p-3 bg-slate-800/80 rounded-2xl">
+                <MapPin className="text-emerald-400 w-6 h-6" />
               </div>
-              <div>
+              <div className="text-left">
                 <h3 className="font-bold text-lg">Hongdae Street</h3>
-                <p className="text-xs text-slate-400">Current Location Context</p>
+                <p className="text-xs text-slate-400">홍대 걷고싶은거리</p>
               </div>
             </div>
             
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="flex items-center gap-1 text-slate-300"><Users size={14} /> Local Ratio</span>
                   <span className="font-bold text-emerald-400">78% Local</span>
                 </div>
-                <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700">
                   <motion.div 
                     className="h-full bg-gradient-to-r from-emerald-500 to-teal-400" 
-                    initial={{ width: 0 }}
-                    animate={{ width: "78%" }}
-                    transition={{ duration: 1, delay: 0.2 }}
+                    initial={{ width: 0 }} animate={{ width: "78%" }} transition={{ duration: 1, delay: 0.2 }}
                   />
                 </div>
               </div>
               
-              <div className="flex gap-4">
-                <div className="flex-1 bg-slate-800/50 rounded-2xl p-3 flex flex-col justify-center items-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent" />
-                  <Clock className="text-amber-400 mb-1" size={18} />
-                  <span className="text-2xl font-bold">15m</span>
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Avg Wait</span>
+              <div className="flex gap-3">
+                <div className="flex-1 bg-slate-800/80 rounded-2xl p-3 flex flex-col items-center shadow-inner">
+                  <Clock className="text-amber-400 mb-1" size={16} />
+                  <span className="text-xl font-bold">15m</span>
+                  <span className="text-[10px] text-slate-400">Avg Wait</span>
                 </div>
-                
-                <div className="flex-1 bg-slate-800/50 rounded-2xl p-3 flex flex-col justify-center items-center relative overflow-hidden">
-                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent" />
-                   <Navigation className="text-blue-400 mb-1" size={18} />
-                   <span className="text-2xl font-bold text-center">Crowded</span>
-                   <span className="text-[10px] text-slate-400 uppercase tracking-wider">Vibe</span>
+                <div className="flex-1 bg-slate-800/80 rounded-2xl p-3 flex flex-col items-center shadow-inner">
+                   <Navigation className="text-blue-400 mb-1" size={16} />
+                   <span className="text-xl font-bold">Vibrant</span>
+                   <span className="text-[10px] text-slate-400">Vibe</span>
                 </div>
               </div>
             </div>
@@ -159,48 +189,32 @@ export default function Home() {
 
         {/* App 5 Feature: Situational Help Widget */}
         <section>
-          <h2 className="text-2xl font-bold mb-4">I'm at a...</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <motion.div 
-              whileHover={{ y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              className="glass rounded-2xl p-5 cursor-pointer flex flex-col items-center justify-center text-center gap-3 relative overflow-hidden border border-white/5 bg-gradient-to-b from-white/5 to-transparent shadow-lg"
-            >
-              <div className="p-4 bg-orange-500/20 rounded-full text-orange-400">
-                <Coffee size={28} />
-              </div>
-              <span className="font-bold">Cafe / Restauraunt</span>
-              <span className="text-xs text-slate-400 w-full truncate">Order in Korean, Etiquette</span>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold">I'm at a...</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <motion.div whileTap={{ scale: 0.95 }} className="glass rounded-2xl p-5 flex flex-col items-center text-center gap-3 border border-white/5 bg-slate-900/50 shadow-lg">
+              <div className="p-3 bg-orange-500/20 rounded-full text-orange-400"><Coffee size={24} /></div>
+              <span className="font-bold text-sm">Restaurant</span>
+              <span className="text-[10px] text-slate-400">한국어로 주문하기</span>
             </motion.div>
             
-            <motion.div 
-              whileHover={{ y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              className="glass rounded-2xl p-5 cursor-pointer flex flex-col items-center justify-center text-center gap-3 relative overflow-hidden border border-white/5 bg-gradient-to-b from-white/5 to-transparent shadow-lg"
-            >
-               <div className="p-4 bg-indigo-500/20 rounded-full text-indigo-400">
-                <Train size={28} />
-              </div>
-              <span className="font-bold">Subway / Bus</span>
-               <span className="text-xs text-slate-400 w-full truncate">Transit maps, Transfers</span>
+            <motion.div whileTap={{ scale: 0.95 }} className="glass rounded-2xl p-5 flex flex-col items-center text-center gap-3 border border-white/5 bg-slate-900/50 shadow-lg">
+               <div className="p-3 bg-indigo-500/20 rounded-full text-indigo-400"><Train size={24} /></div>
+              <span className="font-bold text-sm">Transit</span>
+               <span 대="text-[10px] text-slate-400">지하철/버스 길찾기</span>
             </motion.div>
           </div>
           
-          <motion.div 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="mt-4 glass rounded-2xl p-4 cursor-pointer flex items-center justify-between border border-red-500/30 bg-red-500/10 shadow-lg"
-          >
+          <motion.div whileTap={{ scale: 0.98 }} className="mt-3 glass rounded-2xl p-4 flex items-center justify-between border border-red-500/30 bg-red-500/10 shadow-lg">
             <div className="flex items-center gap-3">
-               <div className="p-2 bg-red-500/20 rounded-full text-red-400">
-                <AlertCircle size={20} />
-              </div>
-              <span className="font-bold text-red-100">Emergency & Help</span>
+               <div className="p-2 bg-red-500/20 rounded-full text-red-400"><AlertCircle size={20} /></div>
+              <span className="font-bold text-red-200 text-sm">Emergency & Help</span>
             </div>
           </motion.div>
         </section>
-      </div>
 
+      </div>
     </div>
   );
 }
