@@ -84,7 +84,7 @@ export default function Home() {
             transition={{ delay: 0.1, duration: 0.5 }}
             className="text-[2rem] font-black text-slate-900 dark:text-white leading-[1.15] mb-3"
           >
-            현지인의 서울이<br />
+            현지인의 꿀팁이<br />
             <span className="bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               당신의 언어로
             </span>{' '}
