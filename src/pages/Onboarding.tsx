@@ -25,7 +25,7 @@ const QUESTIONS = [
 
 export default function Onboarding() {
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<number, string>>({});
   const navigate = useNavigate();
 
   const handleSelect = (optionId: string) => {
