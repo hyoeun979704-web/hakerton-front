@@ -1,6 +1,5 @@
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { MapPin, Users, Clock, Coffee, Train, Navigation, AlertCircle, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 
 // Typewriter effect hook
