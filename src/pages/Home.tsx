@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, MapPin, Sparkles, Navigation, Globe2, Compass, Zap, Ticket, Coffee, Train, HandHeart, MessageCircle } from 'lucide-react';
+import { ArrowRight, MapPin, Sparkles, Navigation, Globe2, Compass, Zap, Coffee, Train, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
