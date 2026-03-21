@@ -3,6 +3,7 @@ import { AppProvider } from './context/AppContext';
 import Navbar from './components/layout/Navbar';
 import Header from './components/layout/Header';
 import Home from './pages/Home';
+import Tips from './pages/Tips';
 import Saved from './pages/Saved';
 import Emergency from './pages/Emergency';
 import Submit from './pages/Submit';
@@ -20,6 +21,8 @@ function AppShell() {
         <main className="flex-1 overflow-x-hidden relative">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/tips" element={<Tips />} />
+            <Route path="/search" element={<Tips />} />
             <Route path="/saved" element={<Saved />} />
             <Route path="/emergency" element={<Emergency />} />
             <Route path="/submit" element={<Submit />} />
@@ -27,7 +30,6 @@ function AppShell() {
             <Route path="/companions" element={<Companions />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/mypage" element={<MyPage />} />
-            <Route path="/search" element={<Home />} />
           </Routes>
         </main>
         <Navbar />

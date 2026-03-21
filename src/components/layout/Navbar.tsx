@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Bookmark, AlertTriangle, Users, Plus } from 'lucide-react';
+import { Home, Search, Bookmark, AlertTriangle, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useApp } from '../../context/AppContext';
 
@@ -9,11 +9,11 @@ export default function Navbar() {
 
   const leftItems = [
     { path: '/', icon: Home, label: t.nav.home },
-    { path: '/saved', icon: Bookmark, label: t.nav.saved },
+    { path: '/tips', icon: Search, label: t.nav.search },
   ];
 
   const rightItems = [
-    { path: '/companions', icon: Users, label: t.nav.companions },
+    { path: '/saved', icon: Bookmark, label: t.nav.saved },
     { path: '/emergency', icon: AlertTriangle, label: t.nav.emergency },
   ];
 
