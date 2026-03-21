@@ -465,7 +465,7 @@ export default function Home() {
           { name: 'Yuki T.', from: '🇯🇵', match: 89, style: '🎤 노래방 · ☕ 카페', color: 'from-violet-500 to-purple-600', initials: 'YT', days: 'D-1' },
           { name: 'Marco R.', from: '🇮🇹', match: 82, style: '🏛️ 역사 · 🍖 K-BBQ', color: 'from-emerald-500 to-teal-500', initials: 'MR', days: 'D-7' },
         ].map(c => (
-          <div key={c.name} className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 mb-2 shadow-sm">
+          <Link key={c.name} to="/companions" className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 mb-2 shadow-sm active:scale-[0.98] transition-transform">
             <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${c.color} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>{c.initials}</div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
@@ -475,7 +475,8 @@ export default function Home() {
               </div>
               <p className="text-[10px] text-slate-400 mt-0.5">{c.style} · <span className="text-orange-400 font-bold">{c.days}</span></p>
             </div>
-          </div>
+            <ChevronRight size={14} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
+          </Link>
         ))}
       </motion.div>
 
