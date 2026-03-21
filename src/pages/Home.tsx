@@ -511,11 +511,18 @@ export default function Home() {
                   { flag: '🇺🇸', lang: 'EN', text: 'Follow arrows 1→2→3 to open the triangle rice ball without soggy seaweed.' },
                   { flag: '🇯🇵', lang: 'JA', text: '矢印の順番で開けるとのりがパリパリのまま食べられます。' },
                   { flag: '🇨🇳', lang: 'ZH', text: '按照箭头顺序打开，海苔就不会变软了。' },
-                ].map(({ flag, lang, text }) => (
-                  <div key={lang} className="bg-white dark:bg-slate-800 rounded-xl p-2.5">
+                ].map(({ flag, lang, text }, i) => (
+                  <motion.div
+                    key={lang}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.15, duration: 0.35 }}
+                    className="bg-white dark:bg-slate-800 rounded-xl p-2.5"
+                  >
                     <span className="text-sm block mb-1">{flag}</span>
                     <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">{text}</p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
