@@ -1,10 +1,42 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+
+    <!-- PWA & Mobile App -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LocalFlow" />
+    <meta name="theme-color" content="#0A0A0E" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    <!-- SEO & Social -->
+    <meta name="description" content="AI 현지인 가이드 - 당신의 취향을 분석하고 서울의 진짜 박동을 연결해주는 유일한 AI 컬처 가이드" />
+    <meta name="keywords" content="Seoul, travel, local guide, AI, Korea, tips" />
+    <meta property="og:title" content="LocalFlow - Seoul AI Guide" />
+    <meta property="og:description" content="Flow like a local. Seoul, Decoded." />
+    <meta property="og:type" content="website" />
+
+    <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>hakerton-front</title>
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+
+    <title>LocalFlow — Seoul AI Guide</title>
+
+    <!-- Prevent flash of wrong theme -->
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('lf_theme') || 'dark';
+          if (t === 'dark') document.documentElement.classList.add('dark');
+        } catch(e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
