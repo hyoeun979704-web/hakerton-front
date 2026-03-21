@@ -33,11 +33,12 @@ export default function Header() {
           {/* LOGO */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
-              <span className="text-white font-black text-base leading-none select-none">L</span>
+              <span className="text-white font-black text-sm leading-none select-none">로</span>
             </div>
-            <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
-              LocalFlow
-            </span>
+            <div className="flex flex-col leading-tight">
+              <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white leading-none">로컬리</span>
+              <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 leading-none mt-0.5">Locally · Seoul</span>
+            </div>
           </div>
 
           {/* CONTROLS */}

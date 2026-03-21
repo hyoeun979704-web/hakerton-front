@@ -5,7 +5,7 @@ export type Theme = 'light' | 'dark';
 
 const TRANSLATIONS = {
   ko: {
-    appName: 'LocalFlow',
+    appName: '로컬리',
     nav: {
       home: '홈',
       search: '검색',
@@ -165,7 +165,7 @@ const TRANSLATIONS = {
     },
   },
   en: {
-    appName: 'LocalFlow',
+    appName: '로컬리',
     nav: {
       home: 'Home',
       search: 'Search',
@@ -325,7 +325,7 @@ const TRANSLATIONS = {
     },
   },
   ja: {
-    appName: 'LocalFlow',
+    appName: '로컬리',
     nav: {
       home: 'ホーム',
       search: '検索',
@@ -485,7 +485,7 @@ const TRANSLATIONS = {
     },
   },
   zh: {
-    appName: 'LocalFlow',
+    appName: '로컬리',
     nav: {
       home: '首页',
       search: '搜索',

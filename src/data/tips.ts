@@ -193,6 +193,98 @@ export const SITUATIONS = [
   { id: 'accommodation', label: '숙소', labelEn: 'ACCOMMODATION', emoji: '🏨', category: 'Shopping' as TipCategory },
 ];
 
+export interface VenueItem {
+  id: string;
+  name: string;
+  area: string;
+  emoji: string;
+  waitMin: number;
+  crowdLevel: 'low' | 'medium' | 'high' | 'very_high';
+  localRatio: number; // 0–100 현지인 비율
+  isTrending: boolean; // SNS 핫플
+  isAiPick: boolean;   // AI 대안 추천
+  pairId?: string;
+  aiTip?: string;
+}
+
+export const VENUES: VenueItem[] = [
+  {
+    id: 'gyeongbokgung',
+    name: '경복궁',
+    area: '종로구',
+    emoji: '🏯',
+    waitMin: 43,
+    crowdLevel: 'very_high',
+    localRatio: 8,
+    isTrending: true,
+    isAiPick: false,
+    pairId: 'changdeokgung',
+  },
+  {
+    id: 'changdeokgung',
+    name: '창덕궁 후원',
+    area: '종로구',
+    emoji: '🌿',
+    waitMin: 5,
+    crowdLevel: 'low',
+    localRatio: 65,
+    isTrending: false,
+    isAiPick: true,
+    pairId: 'gyeongbokgung',
+    aiTip: '현지인 65% · 비밀 정원 투어 포함',
+  },
+  {
+    id: 'myeongdong',
+    name: '명동 먹자골목',
+    area: '중구',
+    emoji: '🛍️',
+    waitMin: 31,
+    crowdLevel: 'high',
+    localRatio: 6,
+    isTrending: true,
+    isAiPick: false,
+    pairId: 'ikseon',
+  },
+  {
+    id: 'ikseon',
+    name: '익선동 한옥마을',
+    area: '종로구',
+    emoji: '🏠',
+    waitMin: 0,
+    crowdLevel: 'medium',
+    localRatio: 58,
+    isTrending: false,
+    isAiPick: true,
+    pairId: 'myeongdong',
+    aiTip: '현지인 58% · 카페·한옥·바이브 완벽',
+  },
+  {
+    id: 'gangnam_station',
+    name: '강남역 주변',
+    area: '강남구',
+    emoji: '🏙️',
+    waitMin: 18,
+    crowdLevel: 'high',
+    localRatio: 22,
+    isTrending: true,
+    isAiPick: false,
+    pairId: 'garosu',
+  },
+  {
+    id: 'garosu',
+    name: '가로수길',
+    area: '강남구',
+    emoji: '🌳',
+    waitMin: 0,
+    crowdLevel: 'low',
+    localRatio: 71,
+    isTrending: false,
+    isAiPick: true,
+    pairId: 'gangnam_station',
+    aiTip: '현지인 71% · 분위기 있는 브런치 명소',
+  },
+];
+
 export const SAVED_KEY = 'lf_saved_tips';
 export const SUBMITTED_KEY = 'lf_submitted_tips';
 
