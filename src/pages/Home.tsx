@@ -63,7 +63,13 @@ export default function Home() {
   const [tipLiked, setTipLiked] = useState(false);
   const [activePair, setActivePair] = useState(0);
   const [tipLang, setTipLang] = useState<LangKey>('ko');
+  const [emergencySaved, setEmergencySaved] = useState(() => localStorage.getItem('lf_emergency_saved') === '1');
   const featuredTip = TIPS.find(t => t.isFeatured) || TIPS[0];
+
+  const handleEmergencySave = () => {
+    localStorage.setItem('lf_emergency_saved', '1');
+    setEmergencySaved(true);
+  };
 
   const handleSave = (id: number) => {
     toggleSaved(id);
@@ -401,15 +407,18 @@ export default function Home() {
       ══════════════════════════════════════ */}
       <motion.div {...fadeUp} className="px-4 mt-7">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-extrabold text-sm text-slate-900 dark:text-white">🗺️ 지금 어디에 계세요?</h2>
-          <Link to="/situations" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">전체 →</Link>
+          <div className="flex items-center gap-2">
+            <Compass size={15} className="text-blue-500" />
+            <h2 className="font-extrabold text-sm text-slate-900 dark:text-white">지금 어디에 계세요?</h2>
+          </div>
+          <Link to="/situations" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">전체 보기 →</Link>
         </div>
         <div className="grid grid-cols-4 gap-2">
           {SITUATIONS.map(({ id, emoji, label }) => (
             <Link
               key={id}
               to={`/tips?situation=${id}`}
-              className="flex flex-col items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 hover:border-blue-300 dark:hover:border-blue-700 transition-all active:scale-95 shadow-sm"
+              className="flex flex-col items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-3.5 hover:border-blue-300 dark:hover:border-blue-700 transition-all active:scale-95 shadow-sm"
             >
               <span className="text-xl">{emoji}</span>
               <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400 leading-tight text-center">{label}</span>
@@ -427,7 +436,7 @@ export default function Home() {
             <Users size={15} className="text-purple-500" />
             <h2 className="font-extrabold text-sm text-slate-900 dark:text-white">지금 당신을 찾는 메이트</h2>
           </div>
-          <Link to="/companions" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">전체 →</Link>
+          <Link to="/companions" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">전체 보기 →</Link>
         </div>
 
         {/* urgent banner */}
@@ -547,7 +556,17 @@ export default function Home() {
               <AlertTriangle size={15} className="text-red-400" />
               <span className="font-extrabold text-sm text-white">긴급 상황 대비</span>
             </div>
-            <span className="text-[10px] font-bold text-slate-500">오프라인 저장 가능</span>
+            <button
+              onClick={handleEmergencySave}
+              className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full transition-all ${
+                emergencySaved
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              <Bookmark size={10} fill={emergencySaved ? 'currentColor' : 'none'} />
+              {emergencySaved ? '저장됨' : '오프라인 저장'}
+            </button>
           </div>
 
           <div className="grid grid-cols-2 gap-2 mb-4">
