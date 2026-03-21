@@ -4,7 +4,7 @@ import type { HTMLMotionProps } from 'framer-motion';
 import {
   ArrowRight, Sparkles, Compass,
   Users, Star, AlertTriangle, Bookmark,
-  Clock, Bot, ChevronRight,
+  Clock, Bot, ChevronRight, ChevronLeft,
   Flame, Globe2, Heart
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -42,11 +42,34 @@ const SITUATIONS = [
   { id: 'accommodation', emoji: '🏨', label: '숙소' },
 ];
 
+type LangKey = 'ko' | 'en' | 'ja' | 'zh';
+
+const LANG_TABS: { key: LangKey; flag: string; label: string }[] = [
+  { key: 'ko', flag: '🇰🇷', label: 'KR' },
+  { key: 'en', flag: '🇺🇸', label: 'EN' },
+  { key: 'ja', flag: '🇯🇵', label: 'JA' },
+  { key: 'zh', flag: '🇨🇳', label: 'ZH' },
+];
+
+const FEATURED_TRANSLATIONS: Record<LangKey, string> = {
+  ko: '작은 그릇들이 다 떨어지면 그냥 달라고 하면 됩니다. "반찬 더 주세요" 라고 말하면 무료로 리필해줘요. 눈치 볼 필요 없어요.',
+  en: 'Side dishes (banchan) are always free to refill. Say "반찬 더 주세요" (ban-chan deo ju-se-yo) and they\'ll happily bring more — it\'s expected, not rude.',
+  ja: '小鉢（バンチャン）はおかわり自由です。「반찬 더 주세요」と言えば喜んで追加してくれます。遠慮は無用、当然のことです。',
+  zh: '小菜（반찬）可以免费续加，这是韩餐厅的惯例。说"반찬 더 주세요"服务员就会高兴地帮您续加，完全不用不好意思。',
+};
+
 export default function Home() {
   const [savedIds, setSavedIds] = useState<Set<number>>(getSavedIds);
   const [tipLiked, setTipLiked] = useState(false);
   const [activePair, setActivePair] = useState(0);
+  const [tipLang, setTipLang] = useState<LangKey>('ko');
+  const [emergencySaved, setEmergencySaved] = useState(() => localStorage.getItem('lf_emergency_saved') === '1');
   const featuredTip = TIPS.find(t => t.isFeatured) || TIPS[0];
+
+  const handleEmergencySave = () => {
+    localStorage.setItem('lf_emergency_saved', '1');
+    setEmergencySaved(true);
+  };
 
   const handleSave = (id: number) => {
     toggleSaved(id);
@@ -84,7 +107,7 @@ export default function Home() {
             transition={{ delay: 0.1, duration: 0.5 }}
             className="text-[2rem] font-black text-slate-900 dark:text-white leading-[1.15] mb-3"
           >
-            현지인의 서울이<br />
+            현지인의 꿀팁이<br />
             <span className="bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               당신의 언어로
             </span>{' '}
@@ -151,25 +174,24 @@ export default function Home() {
               <span className="text-xs font-extrabold text-white tracking-widest uppercase">Seoul NOW</span>
               <span className="text-[10px] font-bold text-slate-500 uppercase">실시간 혼잡도</span>
             </div>
-            <div className="flex gap-1">
-              {VENUE_PAIRS.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActivePair(i)}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors ${activePair === i ? 'bg-blue-400' : 'bg-slate-700'}`}
-                />
-              ))}
-            </div>
+            <span className="text-[10px] text-slate-500 font-medium">{activePair + 1} / {VENUE_PAIRS.length}</span>
           </div>
 
           <AnimatePresence mode="wait">
             <motion.div
               key={activePair}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.15}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -50) setActivePair(p => Math.min(p + 1, VENUE_PAIRS.length - 1));
+                if (info.offset.x > 50)  setActivePair(p => Math.max(p - 1, 0));
+              }}
               initial={{ opacity: 0, x: 12 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -12 }}
               transition={{ duration: 0.25 }}
-              className="grid grid-cols-2 divide-x divide-slate-800"
+              className="grid grid-cols-2 divide-x divide-slate-800 cursor-grab active:cursor-grabbing select-none"
             >
               {/* SNS 핫플 */}
               <div className="p-4">
@@ -256,9 +278,33 @@ export default function Home() {
             </motion.div>
           </AnimatePresence>
 
-          {/* swipe hint + CTA */}
-          <div className="px-5 pb-4 pt-3 border-t border-slate-800 flex items-center justify-between">
-            <p className="text-[10px] text-slate-600">← 좌우로 넘겨보세요</p>
+          {/* arrow nav + CTA */}
+          <div className="px-4 pb-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setActivePair(p => Math.max(p - 1, 0))}
+                disabled={activePair === 0}
+                className="w-7 h-7 rounded-full flex items-center justify-center bg-slate-800 disabled:opacity-25 hover:bg-slate-700 transition-colors"
+              >
+                <ChevronLeft size={13} className="text-white" />
+              </button>
+              <div className="flex gap-1.5">
+                {VENUE_PAIRS.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActivePair(i)}
+                    className={`rounded-full transition-all ${activePair === i ? 'w-4 h-2 bg-blue-400' : 'w-2 h-2 bg-slate-700'}`}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={() => setActivePair(p => Math.min(p + 1, VENUE_PAIRS.length - 1))}
+                disabled={activePair === VENUE_PAIRS.length - 1}
+                className="w-7 h-7 rounded-full flex items-center justify-center bg-slate-800 disabled:opacity-25 hover:bg-slate-700 transition-colors"
+              >
+                <ChevronRight size={13} className="text-white" />
+              </button>
+            </div>
             <Link to="/tips" className="flex items-center gap-1 text-[11px] font-bold text-blue-400">
               전체 명소 보기 <ChevronRight size={12} />
             </Link>
@@ -291,21 +337,43 @@ export default function Home() {
             <h3 className="font-extrabold text-white text-sm leading-snug">{featuredTip.titleKo}</h3>
           </div>
 
-          {/* bilingual content */}
+          {/* language tabs + content */}
           <div className="p-4">
-            <div className="mb-3">
-              <p className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wider">🇰🇷 원문</p>
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{featuredTip.contentKo}</p>
+            <div className="flex gap-1.5 mb-3">
+              {LANG_TABS.map(({ key, flag, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setTipLang(key)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${
+                    tipLang === key
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  {flag} {label}
+                </button>
+              ))}
             </div>
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <Sparkles size={11} className="text-purple-500" />
-                <p className="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">AI Translation · EN</p>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">
-                "{featuredTip.contentEn}"
-              </p>
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tipLang}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+                className={`rounded-xl p-3 ${tipLang === 'ko' ? 'bg-slate-50 dark:bg-slate-800' : 'bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30'}`}
+              >
+                {tipLang !== 'ko' && (
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Sparkles size={10} className="text-purple-500" />
+                    <span className="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">AI 번역</span>
+                  </div>
+                )}
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                  {FEATURED_TRANSLATIONS[tipLang]}
+                </p>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* footer */}
@@ -339,15 +407,18 @@ export default function Home() {
       ══════════════════════════════════════ */}
       <motion.div {...fadeUp} className="px-4 mt-7">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-extrabold text-sm text-slate-900 dark:text-white">🗺️ 지금 어디에 계세요?</h2>
-          <Link to="/situations" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">전체 →</Link>
+          <div className="flex items-center gap-2">
+            <Compass size={15} className="text-blue-500" />
+            <h2 className="font-extrabold text-sm text-slate-900 dark:text-white">지금 어디에 계세요?</h2>
+          </div>
+          <Link to="/situations" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">전체 보기 →</Link>
         </div>
         <div className="grid grid-cols-4 gap-2">
           {SITUATIONS.map(({ id, emoji, label }) => (
             <Link
               key={id}
               to={`/tips?situation=${id}`}
-              className="flex flex-col items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 hover:border-blue-300 dark:hover:border-blue-700 transition-all active:scale-95 shadow-sm"
+              className="flex flex-col items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-3.5 hover:border-blue-300 dark:hover:border-blue-700 transition-all active:scale-95 shadow-sm"
             >
               <span className="text-xl">{emoji}</span>
               <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400 leading-tight text-center">{label}</span>
@@ -365,7 +436,7 @@ export default function Home() {
             <Users size={15} className="text-purple-500" />
             <h2 className="font-extrabold text-sm text-slate-900 dark:text-white">지금 당신을 찾는 메이트</h2>
           </div>
-          <Link to="/companions" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">전체 →</Link>
+          <Link to="/companions" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">전체 보기 →</Link>
         </div>
 
         {/* urgent banner */}
@@ -403,7 +474,7 @@ export default function Home() {
           { name: 'Yuki T.', from: '🇯🇵', match: 89, style: '🎤 노래방 · ☕ 카페', color: 'from-violet-500 to-purple-600', initials: 'YT', days: 'D-1' },
           { name: 'Marco R.', from: '🇮🇹', match: 82, style: '🏛️ 역사 · 🍖 K-BBQ', color: 'from-emerald-500 to-teal-500', initials: 'MR', days: 'D-7' },
         ].map(c => (
-          <div key={c.name} className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 mb-2 shadow-sm">
+          <Link key={c.name} to="/companions" className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 mb-2 shadow-sm active:scale-[0.98] transition-transform">
             <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${c.color} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>{c.initials}</div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
@@ -413,7 +484,8 @@ export default function Home() {
               </div>
               <p className="text-[10px] text-slate-400 mt-0.5">{c.style} · <span className="text-orange-400 font-bold">{c.days}</span></p>
             </div>
-          </div>
+            <ChevronRight size={14} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
+          </Link>
         ))}
       </motion.div>
 
@@ -448,11 +520,18 @@ export default function Home() {
                   { flag: '🇺🇸', lang: 'EN', text: 'Follow arrows 1→2→3 to open the triangle rice ball without soggy seaweed.' },
                   { flag: '🇯🇵', lang: 'JA', text: '矢印の順番で開けるとのりがパリパリのまま食べられます。' },
                   { flag: '🇨🇳', lang: 'ZH', text: '按照箭头顺序打开，海苔就不会变软了。' },
-                ].map(({ flag, lang, text }) => (
-                  <div key={lang} className="bg-white dark:bg-slate-800 rounded-xl p-2.5">
+                ].map(({ flag, lang, text }, i) => (
+                  <motion.div
+                    key={lang}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.15, duration: 0.35 }}
+                    className="bg-white dark:bg-slate-800 rounded-xl p-2.5"
+                  >
                     <span className="text-sm block mb-1">{flag}</span>
                     <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">{text}</p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -477,7 +556,17 @@ export default function Home() {
               <AlertTriangle size={15} className="text-red-400" />
               <span className="font-extrabold text-sm text-white">긴급 상황 대비</span>
             </div>
-            <span className="text-[10px] font-bold text-slate-500">오프라인 저장 가능</span>
+            <button
+              onClick={handleEmergencySave}
+              className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full transition-all ${
+                emergencySaved
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              <Bookmark size={10} fill={emergencySaved ? 'currentColor' : 'none'} />
+              {emergencySaved ? '저장됨' : '오프라인 저장'}
+            </button>
           </div>
 
           <div className="grid grid-cols-2 gap-2 mb-4">
