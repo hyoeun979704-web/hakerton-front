@@ -24,7 +24,6 @@ function useTypewriter(text: string, speed = 50, startDelay = 0) {
 }
 
 export default function Home() {
-  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Parallax for background
@@ -202,7 +201,7 @@ export default function Home() {
             <motion.div whileTap={{ scale: 0.95 }} className="glass rounded-2xl p-5 flex flex-col items-center text-center gap-3 border border-white/5 bg-slate-900/50 shadow-lg">
                <div className="p-3 bg-indigo-500/20 rounded-full text-indigo-400"><Train size={24} /></div>
               <span className="font-bold text-sm">Transit</span>
-               <span 대="text-[10px] text-slate-400">지하철/버스 길찾기</span>
+               <span className="text-[10px] text-slate-400">지하철/버스 길찾기</span>
             </motion.div>
           </div>
           
