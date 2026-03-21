@@ -42,10 +42,27 @@ const SITUATIONS = [
   { id: 'accommodation', emoji: '🏨', label: '숙소' },
 ];
 
+type LangKey = 'ko' | 'en' | 'ja' | 'zh';
+
+const LANG_TABS: { key: LangKey; flag: string; label: string }[] = [
+  { key: 'ko', flag: '🇰🇷', label: 'KR' },
+  { key: 'en', flag: '🇺🇸', label: 'EN' },
+  { key: 'ja', flag: '🇯🇵', label: 'JA' },
+  { key: 'zh', flag: '🇨🇳', label: 'ZH' },
+];
+
+const FEATURED_TRANSLATIONS: Record<LangKey, string> = {
+  ko: '작은 그릇들이 다 떨어지면 그냥 달라고 하면 됩니다. "반찬 더 주세요" 라고 말하면 무료로 리필해줘요. 눈치 볼 필요 없어요.',
+  en: 'Side dishes (banchan) are always free to refill. Say "반찬 더 주세요" (ban-chan deo ju-se-yo) and they\'ll happily bring more — it\'s expected, not rude.',
+  ja: '小鉢（バンチャン）はおかわり自由です。「반찬 더 주세요」と言えば喜んで追加してくれます。遠慮は無用、当然のことです。',
+  zh: '小菜（반찬）可以免费续加，这是韩餐厅的惯例。说"반찬 더 주세요"服务员就会高兴地帮您续加，完全不用不好意思。',
+};
+
 export default function Home() {
   const [savedIds, setSavedIds] = useState<Set<number>>(getSavedIds);
   const [tipLiked, setTipLiked] = useState(false);
   const [activePair, setActivePair] = useState(0);
+  const [tipLang, setTipLang] = useState<LangKey>('ko');
   const featuredTip = TIPS.find(t => t.isFeatured) || TIPS[0];
 
   const handleSave = (id: number) => {
@@ -314,21 +331,43 @@ export default function Home() {
             <h3 className="font-extrabold text-white text-sm leading-snug">{featuredTip.titleKo}</h3>
           </div>
 
-          {/* bilingual content */}
+          {/* language tabs + content */}
           <div className="p-4">
-            <div className="mb-3">
-              <p className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wider">🇰🇷 원문</p>
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{featuredTip.contentKo}</p>
+            <div className="flex gap-1.5 mb-3">
+              {LANG_TABS.map(({ key, flag, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setTipLang(key)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${
+                    tipLang === key
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  {flag} {label}
+                </button>
+              ))}
             </div>
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <Sparkles size={11} className="text-purple-500" />
-                <p className="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">AI Translation · EN</p>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">
-                "{featuredTip.contentEn}"
-              </p>
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tipLang}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+                className={`rounded-xl p-3 ${tipLang === 'ko' ? 'bg-slate-50 dark:bg-slate-800' : 'bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30'}`}
+              >
+                {tipLang !== 'ko' && (
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Sparkles size={10} className="text-purple-500" />
+                    <span className="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">AI 번역</span>
+                  </div>
+                )}
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                  {FEATURED_TRANSLATIONS[tipLang]}
+                </p>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* footer */}
