@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Globe, Moon, Sun } from 'lucide-react';
+import { Globe, Moon, Sun, SlidersHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { useApp, type Lang } from '../../context/AppContext';
 
 const LANG_OPTIONS: { code: Lang; flag: string; label: string }[] = [
@@ -11,8 +12,10 @@ const LANG_OPTIONS: { code: Lang; flag: string; label: string }[] = [
 ];
 
 export default function Header() {
-  const { lang, setLang, theme, toggleTheme } = useApp();
+  const { lang, setLang, theme, toggleTheme, openHomeSettings } = useApp();
   const [langOpen, setLangOpen] = useState(false);
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
   const currentLang = LANG_OPTIONS.find(l => l.code === lang);
 
@@ -23,7 +26,6 @@ export default function Header() {
 
   return (
     <>
-      {/* Overlay to close dropdown */}
       {langOpen && (
         <div className="fixed inset-0 z-40" onClick={() => setLangOpen(false)} />
       )}
@@ -42,7 +44,18 @@ export default function Header() {
           </div>
 
           {/* CONTROLS */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            {/* Home Settings — only on home route */}
+            {isHome && (
+              <button
+                onClick={openHomeSettings}
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300"
+                aria-label="홈 설정"
+              >
+                <SlidersHorizontal size={16} />
+              </button>
+            )}
+
             {/* Language Selector */}
             <div className="relative z-50">
               <button
