@@ -1,14 +1,51 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import type { HTMLMotionProps } from 'framer-motion';
 import {
   Sparkles, Compass,
   Users, Star, AlertTriangle, Bookmark,
   Clock, Bot, ChevronRight, ChevronLeft,
-  Flame, Heart, MessageCircle, ArrowRight
+  Flame, Heart, MessageCircle, ArrowRight,
+  X, GripVertical, Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TIPS, VENUES, getSavedIds, toggleSaved } from '../data/tips';
+import { useApp } from '../context/AppContext';
+
+/* ── 홈 설정 타입 ── */
+type SectionId = 'categories' | 'emergency' | 'pick' | 'live' | 'travel' | 'companions';
+
+const SECTION_META: Record<SectionId, { label: string; labelEn: string; icon: string }> = {
+  categories: { label: '정보 카테고리',  labelEn: 'Categories',   icon: '🗺️' },
+  emergency:  { label: '긴급 상황 대비', labelEn: 'Emergency',    icon: '🆘' },
+  pick:       { label: '오늘의 픽',      labelEn: "Today's Pick", icon: '⭐' },
+  live:       { label: '실시간 혼잡도',  labelEn: 'Live Crowd',   icon: '📡' },
+  travel:     { label: '맞춤 여행 계획', labelEn: 'Travel Plan',  icon: '✈️' },
+  companions: { label: '동행 미니카드',  labelEn: 'Travel Mates', icon: '👥' },
+};
+
+const DEFAULT_SECTION_ORDER: SectionId[] = ['categories', 'emergency', 'pick', 'live', 'travel', 'companions'];
+const SETTINGS_KEY = 'lf_home_v3';
+
+interface HomeSettings { showHeadline: boolean; sectionOrder: SectionId[] }
+
+function loadSettings(): HomeSettings {
+  try {
+    const s = localStorage.getItem(SETTINGS_KEY);
+    if (s) {
+      const p = JSON.parse(s) as Partial<HomeSettings>;
+      return {
+        showHeadline: p.showHeadline ?? true,
+        sectionOrder: p.sectionOrder ?? [...DEFAULT_SECTION_ORDER],
+      };
+    }
+  } catch {}
+  return { showHeadline: true, sectionOrder: [...DEFAULT_SECTION_ORDER] };
+}
+
+function saveSettings(s: HomeSettings) {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch {}
+}
 
 /* ── animation preset ── */
 const fadeUp: HTMLMotionProps<'div'> = {
@@ -59,12 +96,18 @@ const FEATURED_TRANSLATIONS: Record<LangKey, string> = {
 };
 
 export default function Home() {
+  const { homeSettingsOpen, closeHomeSettings } = useApp();
+
+  /* page state */
   const [savedIds, setSavedIds] = useState<Set<number>>(getSavedIds);
   const [tipLiked, setTipLiked] = useState(false);
   const [activePair, setActivePair] = useState(0);
   const [tipLang, setTipLang] = useState<LangKey>('ko');
   const [emergencySaved, setEmergencySaved] = useState(() => localStorage.getItem('lf_emergency_saved') === '1');
-  const featuredTip = TIPS.find(t => t.isFeatured) || TIPS[0];
+
+  /* home settings state */
+  const [settings, setSettings] = useState<HomeSettings>(loadSettings);
+  const [draftOrder, setDraftOrder] = useState<SectionId[]>(loadSettings().sectionOrder);
 
   const handleEmergencySave = () => {
     localStorage.setItem('lf_emergency_saved', '1');
@@ -76,15 +119,147 @@ export default function Home() {
     setSavedIds(getSavedIds());
   };
 
+  const applySettings = () => {
+    const next = { ...settings, sectionOrder: draftOrder };
+    setSettings(next);
+    saveSettings(next);
+    closeHomeSettings();
+  };
+
+  const toggleHeadline = () => {
+    setSettings(s => ({ ...s, showHeadline: !s.showHeadline }));
+  };
+
+  const featuredTip = TIPS.find(t => t.isFeatured) || TIPS[0];
   const pair = VENUE_PAIRS[activePair];
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0A0E] pb-28">
 
       {/* ══════════════════════════════════════
-          1. HERO
+          홈 설정 패널 (bottom sheet)
       ══════════════════════════════════════ */}
-      <section className="relative overflow-hidden px-6 pt-20 pb-12">
+      <AnimatePresence>
+        {homeSettingsOpen && (
+          <>
+            {/* backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeHomeSettings}
+              className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
+            />
+            {/* sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto bg-white dark:bg-[#111118] rounded-t-3xl border-t border-slate-200 dark:border-slate-800 shadow-2xl"
+            >
+              {/* handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+              </div>
+
+              {/* header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                  <h2 className="font-extrabold text-base text-slate-900 dark:text-white">홈 커스터마이즈</h2>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Customize your home screen</p>
+                </div>
+                <button onClick={closeHomeSettings} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="px-5 py-4 max-h-[65vh] overflow-y-auto">
+                {/* headline toggle */}
+                <div className="mb-5">
+                  <p className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">헤드라인 · Headline</p>
+                  <button
+                    onClick={toggleHeadline}
+                    className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 active:scale-[0.98] transition-transform"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">🏠</span>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">헤드라인 섹션</p>
+                        <p className="text-[10px] text-slate-400">Hero banner & CTA buttons</p>
+                      </div>
+                    </div>
+                    {/* toggle switch */}
+                    <div className={`relative w-11 h-6 rounded-full transition-colors ${settings.showHeadline ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                      <motion.div
+                        layout
+                        className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm"
+                        animate={{ left: settings.showHeadline ? '22px' : '2px' }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      />
+                    </div>
+                  </button>
+                </div>
+
+                {/* section reorder */}
+                <div>
+                  <p className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">섹션 순서 · Section Order</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-3">길게 누른 후 드래그해서 순서를 바꾸세요<br/>Hold and drag to reorder sections</p>
+                  <Reorder.Group
+                    axis="y"
+                    values={draftOrder}
+                    onReorder={setDraftOrder}
+                    className="space-y-2"
+                  >
+                    {draftOrder.map((id, idx) => {
+                      const meta = SECTION_META[id];
+                      return (
+                        <Reorder.Item
+                          key={id}
+                          value={id}
+                          className="flex items-center gap-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 cursor-grab active:cursor-grabbing active:shadow-lg active:scale-[1.02] transition-shadow select-none"
+                        >
+                          <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 w-4 text-center">{idx + 1}</span>
+                          <span className="text-lg">{meta.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">{meta.label}</p>
+                            <p className="text-[10px] text-slate-400">{meta.labelEn}</p>
+                          </div>
+                          <GripVertical size={16} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
+                        </Reorder.Item>
+                      );
+                    })}
+                  </Reorder.Group>
+                </div>
+              </div>
+
+              {/* footer */}
+              <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  onClick={applySettings}
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm py-3.5 rounded-2xl transition-colors active:scale-[0.98] shadow-lg shadow-blue-500/25"
+                >
+                  <Check size={16} /> 저장 · Save
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════
+          1. HERO (토글 가능)
+      ══════════════════════════════════════ */}
+      <AnimatePresence>
+        {settings.showHeadline && (
+          <motion.section
+            key="hero"
+            initial={false}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35 }}
+            className="relative overflow-hidden px-6 pt-20 pb-12"
+          >
         {/* bg blobs */}
         <div className="absolute inset-0 bg-gradient-to-b from-blue-50 via-indigo-50/40 to-transparent dark:from-blue-950/25 dark:via-indigo-950/15 dark:to-transparent" />
         <div className="absolute top-6 right-4 w-48 h-48 rounded-full bg-gradient-to-br from-blue-400/15 to-indigo-400/15 dark:from-blue-500/8 dark:to-indigo-500/8 blur-3xl pointer-events-none" />
@@ -161,22 +336,27 @@ export default function Home() {
             </p>
           </motion.div>
         </div>
-      </section>
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       {/* ══════════════════════════════════════
-          2. 정보 카테고리
+          섹션 목록 — settings.sectionOrder 순서대로 렌더링
       ══════════════════════════════════════ */}
-      <motion.div {...fadeUp} className="px-4 mt-2">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Compass size={15} className="text-blue-500" />
-            <h2 className="font-extrabold text-sm text-slate-900 dark:text-white">
-              지금 어디에 계세요?
-              <span className="ml-1.5 text-[10px] font-medium text-slate-400">Where are you?</span>
-            </h2>
+      {settings.sectionOrder.map(sectionId => {
+        /* ─── 정보 카테고리 ─── */
+        if (sectionId === 'categories') return (
+        <motion.div key="categories" {...fadeUp} className="px-4 mt-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Compass size={15} className="text-blue-500" />
+              <h2 className="font-extrabold text-sm text-slate-900 dark:text-white">
+                지금 어디에 계세요?
+                <span className="ml-1.5 text-[10px] font-medium text-slate-400">Where are you?</span>
+              </h2>
+            </div>
+            <Link to="/situations" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">전체 보기 →</Link>
           </div>
-          <Link to="/situations" className="text-[11px] font-bold text-blue-600 dark:text-blue-400">전체 보기 →</Link>
-        </div>
         <div className="grid grid-cols-4 gap-2">
           {SITUATIONS.map(({ id, emoji, label, labelEn }) => (
             <Link
@@ -190,12 +370,12 @@ export default function Home() {
             </Link>
           ))}
         </div>
-      </motion.div>
+        </motion.div>
+        );
 
-      {/* ══════════════════════════════════════
-          3. 긴급 상황 대비
-      ══════════════════════════════════════ */}
-      <motion.div {...fadeUp} className="px-4 mt-6">
+        /* ─── 긴급 상황 대비 ─── */
+        if (sectionId === 'emergency') return (
+        <motion.div key="emergency" {...fadeUp} className="px-4 mt-6">
         <div className="bg-slate-900 dark:bg-slate-950 rounded-3xl border border-slate-800 p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -238,12 +418,12 @@ export default function Home() {
             <AlertTriangle size={13} /> 긴급 정보 + 음성 발음 보기 <ChevronRight size={13} />
           </Link>
         </div>
-      </motion.div>
+        </motion.div>
+        );
 
-      {/* ══════════════════════════════════════
-          4. 오늘의 로컬 Pick
-      ══════════════════════════════════════ */}
-      <motion.div {...fadeUp} className="px-4 mt-6">
+        /* ─── 오늘의 픽 ─── */
+        if (sectionId === 'pick') return (
+        <motion.div key="pick" {...fadeUp} className="px-4 mt-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Star size={15} className="text-amber-400 fill-amber-400" />
@@ -325,12 +505,12 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </motion.div>
+        </motion.div>
+        );
 
-      {/* ══════════════════════════════════════
-          5. 🔴 LIVE SEOUL NOW — 실시간 혼잡도
-      ══════════════════════════════════════ */}
-      <motion.div {...fadeUp} className="px-4 mt-6 mb-2">
+        /* ─── 실시간 혼잡도 ─── */
+        if (sectionId === 'live') return (
+        <motion.div key="live" {...fadeUp} className="px-4 mt-6 mb-2">
         <div className="bg-slate-900 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-800">
           {/* header */}
           <div className="px-5 pt-4 pb-3 border-b border-slate-800 flex items-center justify-between">
@@ -475,12 +655,12 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </motion.div>
+        </motion.div>
+        );
 
-      {/* ══════════════════════════════════════
-          6. 동행 미니카드
-      ══════════════════════════════════════ */}
-      <motion.div {...fadeUp} className="px-4 mt-6">
+        /* ─── 동행 미니카드 ─── */
+        if (sectionId === 'companions') return (
+        <motion.div key="companions" {...fadeUp} className="px-4 mt-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Users size={15} className="text-purple-500" />
@@ -537,13 +717,12 @@ export default function Home() {
             <ChevronRight size={14} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
           </Link>
         ))}
-      </motion.div>
+        </motion.div>
+        );
 
-
-      {/* ══════════════════════════════════════
-          7. 맞춤 여행 계획
-      ══════════════════════════════════════ */}
-      <motion.div {...fadeUp} className="px-4 mt-6">
+        /* ─── 맞춤 여행 계획 ─── */
+        if (sectionId === 'travel') return (
+        <motion.div key="travel" {...fadeUp} className="px-4 mt-6">
         <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 rounded-3xl p-5 shadow-xl shadow-blue-500/20">
           <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-white/5 -mr-8 -mt-8 pointer-events-none" />
           <div className="relative z-10">
@@ -573,7 +752,11 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </motion.div>
+        </motion.div>
+        );
+
+        return null;
+      })}
 
     </div>
   );
