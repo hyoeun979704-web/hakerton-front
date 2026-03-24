@@ -5,7 +5,7 @@ import {
   Sparkles, Compass,
   Users, Star, AlertTriangle, Bookmark,
   Clock, Bot, ChevronRight, ChevronLeft,
-  Flame, Heart, MessageCircle, ArrowRight, Globe2
+  Flame, Heart, MessageCircle, ArrowRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TIPS, VENUES, getSavedIds, toggleSaved } from '../data/tips';
@@ -490,62 +490,6 @@ export default function Home() {
         ))}
       </motion.div>
 
-      {/* ══════════════════════════════════════
-          6. AI 번역 — 나도 공유하기
-      ══════════════════════════════════════ */}
-      <motion.div {...fadeUp} className="px-4 mt-7">
-        <div className="bg-gradient-to-br from-slate-50 to-indigo-50/50 dark:from-slate-900 dark:to-indigo-950/30 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-indigo-400/10 blur-2xl pointer-events-none" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-1">
-              <Globe2 size={16} className="text-blue-500" />
-              <h2 className="font-extrabold text-sm text-slate-900 dark:text-white">당신의 꿀팁이 세계로</h2>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">한국어로 쓰면 AI가 4개 국어로 문화 번역합니다</p>
-
-            {/* translation demo */}
-            <div className="space-y-2 mb-4">
-              <div className="bg-white dark:bg-slate-800 rounded-xl px-3 py-2.5 flex items-start gap-2">
-                <span className="text-base flex-shrink-0">🇰🇷</span>
-                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">"편의점 삼각김밥은 화살표 순서대로 열면 김이 안 눅어요"</p>
-              </div>
-              <div className="flex items-center gap-2 px-2">
-                <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-                <div className="flex items-center gap-1 text-[10px] font-bold text-purple-600 dark:text-purple-400">
-                  <Sparkles size={10} /> AI 문화 번역 중
-                </div>
-                <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-              </div>
-              <div className="grid grid-cols-3 gap-1.5">
-                {[
-                  { flag: '🇺🇸', lang: 'EN', text: 'Follow arrows 1→2→3 to open the triangle rice ball without soggy seaweed.' },
-                  { flag: '🇯🇵', lang: 'JA', text: '矢印の順番で開けるとのりがパリパリのまま食べられます。' },
-                  { flag: '🇨🇳', lang: 'ZH', text: '按照箭头顺序打开，海苔就不会变软了。' },
-                ].map(({ flag, lang, text }, i) => (
-                  <motion.div
-                    key={lang}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.15, duration: 0.35 }}
-                    className="bg-white dark:bg-slate-800 rounded-xl p-2.5"
-                  >
-                    <span className="text-sm block mb-1">{flag}</span>
-                    <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">{text}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            <Link
-              to="/submit"
-              className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-3 rounded-2xl transition-colors shadow-md shadow-blue-500/20"
-            >
-              <Sparkles size={14} /> 내 꿀팁 공유하기
-            </Link>
-          </div>
-        </div>
-      </motion.div>
 
       {/* ══════════════════════════════════════
           7. 긴급 상황 대비
