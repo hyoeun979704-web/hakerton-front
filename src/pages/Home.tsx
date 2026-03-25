@@ -5,7 +5,7 @@ import {
   Sparkles, Compass,
   Users, Star, AlertTriangle, Bookmark,
   Clock, Bot, ChevronRight, ChevronLeft,
-  Flame, Heart, MessageCircle, ArrowRight,
+  Flame, Heart, MessageCircle,
   X, GripVertical, Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -302,20 +302,13 @@ export default function Home() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex gap-2.5"
           >
             <Link
               to="/chat"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-5 py-3 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center gap-1.5 transition-colors active:scale-95"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/25 transition-colors active:scale-95"
             >
-              <MessageCircle size={15} />
-              AI 채팅
-            </Link>
-            <Link
-              to="/tips"
-              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm px-4 py-3 rounded-2xl flex items-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm active:scale-95"
-            >
-              <Compass size={14} /> 꿀팁 탐색 <ArrowRight size={13} />
+              <MessageCircle size={16} />
+              AI 채팅으로 서울 꿀팁 물어보기
             </Link>
           </motion.div>
 
