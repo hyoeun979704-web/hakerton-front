@@ -643,8 +643,8 @@ export default function Home() {
                 <ChevronRight size={13} className="text-white" />
               </button>
             </div>
-            <Link to="/tips" className="flex items-center gap-1 text-[11px] font-bold text-blue-400">
-              전체 명소 보기 <ChevronRight size={12} />
+            <Link to="/live" className="flex items-center gap-1 text-[11px] font-bold text-blue-400">
+              실시간 전체 보기 <ChevronRight size={12} />
             </Link>
           </div>
         </div>

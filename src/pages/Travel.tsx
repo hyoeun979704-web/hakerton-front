@@ -552,17 +552,21 @@ export default function Travel() {
               <div className="mt-6 space-y-3">
                 <button
                   disabled={state.selectedPlan === null}
+                  onClick={() => navigate('/companions')}
                   className="w-full bg-blue-600 disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white disabled:text-slate-400 font-extrabold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-blue-500/25 disabled:shadow-none"
                 >
                   <Navigation size={16} /> 이 여행으로 결정!
                 </button>
                 <div className="flex gap-2">
-                  <button className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-bold text-sm py-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <button
+                    onClick={() => setStep(2)}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-bold text-sm py-3 rounded-2xl border border-slate-200 dark:border-slate-800 active:scale-95 transition-transform"
+                  >
                     <Edit3 size={14} /> 장소 수정
                   </button>
                   <Link
                     to="/tips"
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-bold text-sm py-3 rounded-2xl border border-slate-200 dark:border-slate-800"
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-bold text-sm py-3 rounded-2xl border border-slate-200 dark:border-slate-800 active:scale-95 transition-transform"
                   >
                     <Star size={14} /> AI 꿀팁 보기
                   </Link>
