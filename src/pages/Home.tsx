@@ -676,18 +676,12 @@ export default function Home() {
               <p className="text-white/60 text-[10px]">📅 3/25 출발 · D-4</p>
             </div>
           </div>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3">
             <Link
               to="/companions"
-              className="flex-1 bg-white text-purple-700 font-bold text-xs py-2 rounded-xl text-center"
+              className="flex items-center justify-center gap-1.5 w-full bg-white text-purple-700 font-bold text-xs py-2.5 rounded-xl"
             >
               동행 신청하기 →
-            </Link>
-            <Link
-              to="/onboarding"
-              className="px-3 bg-white/10 text-white font-bold text-xs py-2 rounded-xl text-center"
-            >
-              내 스타일 먼저
             </Link>
           </div>
         </div>
@@ -729,20 +723,12 @@ export default function Home() {
             <p className="text-white/60 text-xs mb-4 leading-relaxed">
               2가지 질문으로 여행 페르소나를 분석하고<br />맞춤 꿀팁 + 동행 메이트를 연결해드립니다
             </p>
-            <div className="flex gap-2">
-              <Link
-                to="/onboarding"
-                className="flex-1 flex items-center justify-center gap-1.5 bg-white text-indigo-700 font-extrabold text-xs py-2.5 rounded-xl shadow-md hover:bg-slate-100 transition-colors active:scale-95"
-              >
-                <Sparkles size={12} /> 스타일 진단 시작
-              </Link>
-              <Link
-                to="/companions"
-                className="flex-1 flex items-center justify-center gap-1.5 bg-white/15 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-white/20 transition-colors active:scale-95"
-              >
-                <Users size={12} /> 동행 찾기
-              </Link>
-            </div>
+            <Link
+              to="/travel"
+              className="flex items-center justify-center gap-2 w-full bg-white text-indigo-700 font-extrabold text-sm py-3 rounded-xl shadow-md hover:bg-slate-100 transition-colors active:scale-95"
+            >
+              <Sparkles size={14} /> 여행 계획 세우기
+            </Link>
           </div>
         </div>
         </motion.div>
