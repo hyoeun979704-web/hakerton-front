@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Globe, Moon, Sun, Bell, Info, ChevronRight,
-  Shield, FileText, User, Check, Sparkles
+  Shield, FileText, User, Check, Sparkles,
+  LogIn, LogOut, Bookmark, PenLine
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp, type Lang } from '../context/AppContext';
@@ -14,10 +15,31 @@ const LANG_OPTIONS: { code: Lang; flag: string; label: string }[] = [
   { code: 'zh', flag: '🇨🇳', label: '中文' },
 ];
 
+const TESTER = {
+  name: 'Kim 테스터',
+  nameEn: 'Kim Tester',
+  email: 'tester@localflow.kr',
+  initials: 'KT',
+};
+
+function loadLogin(): boolean {
+  try { return localStorage.getItem('lf_logged_in') === '1'; } catch { return false; }
+}
+
 export default function MyPage() {
   const { lang, setLang, theme, toggleTheme, t } = useApp();
   const mt = t.myPage;
   const [notifEnabled, setNotifEnabled] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(loadLogin);
+
+  const login = () => {
+    try { localStorage.setItem('lf_logged_in', '1'); } catch {}
+    setIsLoggedIn(true);
+  };
+  const logout = () => {
+    try { localStorage.removeItem('lf_logged_in'); } catch {}
+    setIsLoggedIn(false);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0A0E] pt-14 pb-24">
@@ -27,21 +49,51 @@ export default function MyPage() {
       </div>
 
       {/* Profile Card */}
-      <div className="px-6 mb-6">
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
-            <User size={24} className="text-white" />
+      <div className="px-6 mb-4">
+        {isLoggedIn ? (
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
+                <span className="text-white font-extrabold text-lg">{TESTER.initials}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-slate-900 dark:text-white text-base truncate">{TESTER.name}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{TESTER.email}</p>
+                <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full">
+                  ✓ 테스터 계정
+                </span>
+              </div>
+              <button
+                onClick={logout}
+                className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl active:scale-95 transition-transform"
+              >
+                <LogOut size={12} /> 로그아웃
+              </button>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-slate-900 dark:text-white text-base truncate">{mt.guestUser}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{mt.guestEmail}</p>
+        ) : (
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
+                <User size={24} className="text-slate-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-slate-900 dark:text-white text-base">{mt.guestUser}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{mt.guestEmail}</p>
+              </div>
+            </div>
+            <button
+              onClick={login}
+              className="mt-4 w-full flex items-center justify-center gap-2 bg-blue-600 text-white font-extrabold text-sm py-3 rounded-2xl shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-transform"
+            >
+              <LogIn size={15} /> 테스터로 로그인
+            </button>
           </div>
-          <ChevronRight size={18} className="text-slate-400 flex-shrink-0" />
-        </div>
+        )}
       </div>
 
       {/* Travel Style Button */}
-      <div className="px-6 mb-6">
+      <div className="px-6 mb-4">
         <Link
           to="/onboarding"
           className="flex items-center gap-3 w-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl px-5 py-4 shadow-md shadow-blue-500/20 active:scale-[0.98] transition-transform"
@@ -57,11 +109,37 @@ export default function MyPage() {
         </Link>
       </div>
 
+      {/* Shortcuts */}
+      <div className="px-6 mb-6">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+          <Link
+            to="/saved"
+            className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors active:scale-[0.99]"
+          >
+            <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-500/15 flex items-center justify-center flex-shrink-0">
+              <Bookmark size={17} className="text-amber-600 dark:text-amber-400" />
+            </div>
+            <span className="flex-1 font-semibold text-sm text-slate-700 dark:text-slate-300">저장한 꿀팁</span>
+            <ChevronRight size={16} className="text-slate-300 dark:text-slate-600" />
+          </Link>
+          <Link
+            to="/submit"
+            className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors active:scale-[0.99]"
+          >
+            <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-500/15 flex items-center justify-center flex-shrink-0">
+              <PenLine size={17} className="text-purple-600 dark:text-purple-400" />
+            </div>
+            <span className="flex-1 font-semibold text-sm text-slate-700 dark:text-slate-300">꿀팁 제보하기</span>
+            <ChevronRight size={16} className="text-slate-300 dark:text-slate-600" />
+          </Link>
+        </div>
+      </div>
+
       {/* Language Section */}
       <SectionHeader icon={Globe} label={mt.language} />
       <div className="px-6 mb-6">
         <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
-          {LANG_OPTIONS.map((opt, idx) => (
+          {LANG_OPTIONS.map((opt) => (
             <motion.button
               key={opt.code}
               whileTap={{ scale: 0.99 }}
@@ -70,7 +148,7 @@ export default function MyPage() {
                 lang === opt.code
                   ? 'bg-blue-50 dark:bg-blue-500/10'
                   : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
-              } ${idx === 0 ? '' : ''}`}
+              }`}
             >
               <span className="text-2xl flex-shrink-0">{opt.flag}</span>
               <span className={`flex-1 font-semibold text-sm ${
@@ -151,7 +229,6 @@ export default function MyPage() {
             <p className="font-semibold text-sm text-slate-700 dark:text-slate-300">{mt.notifications}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{mt.notificationsDesc}</p>
           </div>
-          {/* Toggle Switch */}
           <button
             onClick={() => setNotifEnabled(v => !v)}
             className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
@@ -172,8 +249,8 @@ export default function MyPage() {
       <div className="px-6 mb-6">
         <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
           <InfoRow icon={Info} label={mt.version} value="1.0.0" />
-          <InfoRow icon={Shield} label={mt.privacy} hasArrow />
-          <InfoRow icon={FileText} label={mt.terms} hasArrow />
+          <InfoRow icon={Shield} label={mt.privacy} />
+          <InfoRow icon={FileText} label={mt.terms} />
         </div>
       </div>
 
@@ -204,12 +281,10 @@ function InfoRow({
   icon: Icon,
   label,
   value,
-  hasArrow,
 }: {
   icon: React.ElementType;
   label: string;
   value?: string;
-  hasArrow?: boolean;
 }) {
   return (
     <div className="flex items-center gap-4 px-5 py-4">
@@ -217,8 +292,7 @@ function InfoRow({
         <Icon size={16} className="text-slate-500 dark:text-slate-400" />
       </div>
       <span className="flex-1 font-semibold text-sm text-slate-700 dark:text-slate-300">{label}</span>
-      {value && <span className="text-sm text-slate-400 dark:text-slate-500">{value}</span>}
-      {hasArrow && <ChevronRight size={16} className="text-slate-400 flex-shrink-0" />}
+      {value && <span className="text-sm text-slate-400 dark:text-slate-500 font-medium">{value}</span>}
     </div>
   );
 }
