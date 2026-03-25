@@ -8,6 +8,10 @@ const TRANSLATIONS = {
     appName: '로컬리',
     nav: {
       home: '홈',
+      live: '실시간',
+      tips: '꿀팁',
+      travel: '여행',
+      mypage: '마이',
       search: '검색',
       saved: '저장',
       emergency: '긴급',
@@ -168,6 +172,10 @@ const TRANSLATIONS = {
     appName: '로컬리',
     nav: {
       home: 'Home',
+      live: 'Live',
+      tips: 'Tips',
+      travel: 'Travel',
+      mypage: 'My',
       search: 'Search',
       saved: 'Saved',
       emergency: 'SOS',
@@ -328,6 +336,10 @@ const TRANSLATIONS = {
     appName: '로컬리',
     nav: {
       home: 'ホーム',
+      live: 'ライブ',
+      tips: 'ヒント',
+      travel: '旅行',
+      mypage: 'マイ',
       search: '検索',
       saved: '保存',
       emergency: '緊急',
@@ -488,6 +500,10 @@ const TRANSLATIONS = {
     appName: '로컬리',
     nav: {
       home: '首页',
+      live: '实时',
+      tips: '攻略',
+      travel: '旅行',
+      mypage: '我的',
       search: '搜索',
       saved: '收藏',
       emergency: '紧急',
@@ -654,6 +670,9 @@ interface AppContextType {
   theme: Theme;
   toggleTheme: () => void;
   t: Translations;
+  homeSettingsOpen: boolean;
+  openHomeSettings: () => void;
+  closeHomeSettings: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -665,6 +684,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     try { return (localStorage.getItem('lf_theme') as Theme) || 'dark'; } catch { return 'dark'; }
   });
+  const [homeSettingsOpen, setHomeSettingsOpen] = useState(false);
 
   const setLang = (l: Lang) => {
     setLangState(l);
@@ -687,7 +707,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const t = TRANSLATIONS[lang] as Translations;
 
   return (
-    <AppContext.Provider value={{ lang, setLang, theme, toggleTheme, t }}>
+    <AppContext.Provider value={{
+      lang, setLang, theme, toggleTheme, t,
+      homeSettingsOpen,
+      openHomeSettings: () => setHomeSettingsOpen(true),
+      closeHomeSettings: () => setHomeSettingsOpen(false),
+    }}>
       {children}
     </AppContext.Provider>
   );

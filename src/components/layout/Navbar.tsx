@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Bookmark, AlertTriangle, Plus } from 'lucide-react';
+import { Home, MapPin, Search, Plane, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useApp } from '../../context/AppContext';
 
@@ -8,13 +8,13 @@ export default function Navbar() {
   const { t } = useApp();
 
   const leftItems = [
-    { path: '/', icon: Home, label: t.nav.home },
-    { path: '/tips', icon: Search, label: t.nav.search },
+    { path: '/',           icon: Home,   label: t.nav.home },
+    { path: '/situations', icon: MapPin, label: t.nav.live },
   ];
 
   const rightItems = [
-    { path: '/saved', icon: Bookmark, label: t.nav.saved },
-    { path: '/emergency', icon: AlertTriangle, label: t.nav.emergency },
+    { path: '/companions', icon: Plane, label: t.nav.travel },
+    { path: '/mypage',     icon: User,  label: t.nav.mypage },
   ];
 
   const NavItem = ({ path, icon: Icon, label }: { path: string; icon: typeof Home; label: string }) => {
@@ -53,19 +53,30 @@ export default function Navbar() {
     );
   };
 
+  const isTipsActive = location.pathname === '/tips' || location.pathname === '/search';
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 glass-panel border-t border-slate-200/60 dark:border-white/5 pb-safe">
       <div className="flex justify-around items-center h-16 max-w-md mx-auto relative">
         {leftItems.map(item => <NavItem key={item.path} {...item} />)}
 
-        {/* Center FAB */}
+        {/* Center FAB — 꿀팁 검색 */}
         <div className="flex flex-col items-center justify-center flex-1 h-full relative">
           <Link
-            to="/submit"
-            className="absolute -top-5 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/40 flex items-center justify-center active:scale-95 transition-transform"
+            to="/tips"
+            className={`absolute -top-6 w-14 h-14 rounded-full flex items-center justify-center shadow-xl active:scale-95 transition-all ${
+              isTipsActive
+                ? 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/50 ring-4 ring-blue-500/20'
+                : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/40'
+            }`}
           >
-            <Plus size={26} className="text-white" strokeWidth={2.5} />
+            <Search size={22} className="text-white" strokeWidth={2.2} />
           </Link>
+          <span className={`absolute bottom-2 text-[9px] font-bold tracking-tight ${
+            isTipsActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'
+          }`}>
+            {t.nav.tips}
+          </span>
         </div>
 
         {rightItems.map(item => <NavItem key={item.path} {...item} />)}

@@ -1,8 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import Navbar from './components/layout/Navbar';
 import Header from './components/layout/Header';
 import Home from './pages/Home';
+import Chat from './pages/Chat';
 import Tips from './pages/Tips';
 import Saved from './pages/Saved';
 import Emergency from './pages/Emergency';
@@ -13,7 +14,24 @@ import Onboarding from './pages/Onboarding';
 import MyPage from './pages/MyPage';
 import './index.css';
 
+const FULLSCREEN_ROUTES = ['/chat'];
+
 function AppShell() {
+  const location = useLocation();
+  const isFullscreen = FULLSCREEN_ROUTES.includes(location.pathname);
+
+  if (isFullscreen) {
+    return (
+      <div className="w-full min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center selection:bg-blue-500/30">
+        <div className="w-full max-w-md bg-white dark:bg-[#0A0A0E] min-h-[100dvh] shadow-2xl relative overflow-hidden">
+          <Routes>
+            <Route path="/chat" element={<Chat />} />
+          </Routes>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full min-h-[100dvh] bg-slate-100 dark:bg-black flex justify-center selection:bg-blue-500/30">
       <div className="w-full max-w-md bg-white dark:bg-[#0A0A0E] min-h-[100dvh] shadow-2xl relative overflow-x-hidden flex flex-col">
