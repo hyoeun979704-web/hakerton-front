@@ -43,11 +43,60 @@ export default function Submit() {
   const handlePost = async () => {
     if (!canPost) return;
     setPosted(true);
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise(r => setTimeout(r, 4000));
     navigate('/');
   };
 
   const translation = MOCK_TRANSLATIONS.default;
+
+  if (posted) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-slate-900 pt-14 pb-24 text-center">
+        <motion.div
+           initial={{ scale: 0 }}
+           animate={{ scale: 1 }}
+           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+           className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-yellow-500/30"
+        >
+          <Sparkles className="w-12 h-12 text-white" />
+        </motion.div>
+        
+        <motion.h1 
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          className="text-3xl font-black text-white mb-2"
+        >
+          +50 XP 획득!
+        </motion.h1>
+        
+        <motion.p 
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className="text-slate-400 mb-10 font-medium text-sm leading-relaxed"
+        >
+          훌륭한 로컬 꿀팁이 전 세계 여행자에게<br/> 번역되어 공유되었습니다.
+        </motion.p>
+        
+        <motion.div 
+           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+           className="w-full max-w-sm bg-slate-800 rounded-2xl p-5 border border-slate-700 flex items-center gap-4 mx-auto"
+        >
+          <div className="w-12 h-12 rounded-full border-4 border-emerald-500/30 flex flex-col items-center justify-center bg-emerald-500/10 text-emerald-400 flex-shrink-0">
+            <span className="text-[10px] font-black leading-none mb-0.5">Lv.</span>
+            <span className="text-sm font-black leading-none">4</span>
+          </div>
+          <div className="flex-1 text-left">
+            <div className="flex items-center justify-between mb-1">
+              <p className="font-bold text-white text-sm">Local Expert 🎉</p>
+              <p className="text-xs font-bold text-emerald-400">200 XP</p>
+            </div>
+            <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+              <motion.div initial={{ width: '75%' }} animate={{ width: '100%' }} transition={{ delay: 0.8, duration: 1, ease: 'easeOut' }} className="h-full bg-gradient-to-r from-emerald-400 to-teal-400" />
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1.5">레벨업! 새로운 배지를 획득했습니다.</p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0A0E] pt-14 pb-24">
@@ -63,6 +112,21 @@ export default function Submit() {
         >
           <X size={18} />
         </button>
+      </div>
+
+      {/* Gamification Profile */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex items-center justify-between text-white shadow-inner">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">ME</div>
+          <div>
+            <p className="font-bold text-sm flex items-center gap-1">Local Explorer <Sparkles size={12}/></p>
+            <p className="text-[11px] text-white/80 mt-0.5">150 XP · <span className="text-emerald-300 font-bold">50 XP to Next Badge</span></p>
+          </div>
+        </div>
+        <div className="w-11 h-11 rounded-full border-2 border-white/30 flex flex-col items-center justify-center bg-white/10 backdrop-blur-sm">
+          <span className="text-[10px] font-black leading-none mb-0.5 text-white/80">Lv.</span>
+          <span className="text-sm font-black leading-none">3</span>
+        </div>
       </div>
 
       <div className="px-4 py-5 space-y-5">
@@ -124,6 +188,17 @@ export default function Submit() {
             />
             <div className={`text-right text-[11px] mt-1.5 font-semibold ${content.length >= 20 ? 'text-emerald-500' : 'text-slate-400'}`}>
               {content.length} / 20+
+            </div>
+            
+            {/* Tip Quality Cue */}
+            <div className="mt-3 bg-amber-50 dark:bg-amber-500/10 rounded-xl p-3 flex gap-2.5 border border-amber-200 dark:border-amber-500/20">
+              <span className="text-lg flex-shrink-0 mt-0.5">💡</span>
+              <div>
+                <p className="text-xs font-bold text-amber-800 dark:text-amber-400 mb-1">외국인을 위한 '이유(Why)'를 적어주면 더 좋아요!</p>
+                <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
+                  예: "한국 식당에선 반찬 추가가 무료니, 언제든 눈치보지 말고 더 달라고 해도 돼요!"
+                </p>
+              </div>
             </div>
           </div>
         </div>

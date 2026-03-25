@@ -39,6 +39,16 @@ export default function Saved() {
         </div>
       </div>
 
+      <div className="bg-emerald-50 dark:bg-emerald-500/10 px-6 py-3 border-b border-emerald-100 dark:border-emerald-500/20 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <div className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </div>
+          <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 tracking-wide uppercase">✅ 오프라인 열람 가능 · Available Offline</span>
+        </div>
+      </div>
+
       <div className="px-4 py-4">
         <AnimatePresence>
           {savedTips.length === 0 ? (
