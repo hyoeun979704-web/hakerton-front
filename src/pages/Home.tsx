@@ -5,7 +5,7 @@ import {
   Sparkles, Compass,
   Users, Star, AlertTriangle, Bookmark,
   Clock, Bot, ChevronRight, ChevronLeft,
-  Flame, Heart, MessageCircle, ArrowRight,
+  Flame, Heart, MessageCircle,
   X, GripVertical, Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -302,20 +302,13 @@ export default function Home() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex gap-2.5"
           >
             <Link
               to="/chat"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-5 py-3 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center gap-1.5 transition-colors active:scale-95"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/25 transition-colors active:scale-95"
             >
-              <MessageCircle size={15} />
-              AI 채팅
-            </Link>
-            <Link
-              to="/tips"
-              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm px-4 py-3 rounded-2xl flex items-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm active:scale-95"
-            >
-              <Compass size={14} /> 꿀팁 탐색 <ArrowRight size={13} />
+              <MessageCircle size={16} />
+              AI 채팅으로 서울 꿀팁 물어보기
             </Link>
           </motion.div>
 
@@ -683,18 +676,12 @@ export default function Home() {
               <p className="text-white/60 text-[10px]">📅 3/25 출발 · D-4</p>
             </div>
           </div>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3">
             <Link
               to="/companions"
-              className="flex-1 bg-white text-purple-700 font-bold text-xs py-2 rounded-xl text-center"
+              className="flex items-center justify-center gap-1.5 w-full bg-white text-purple-700 font-bold text-xs py-2.5 rounded-xl"
             >
               동행 신청하기 →
-            </Link>
-            <Link
-              to="/onboarding"
-              className="px-3 bg-white/10 text-white font-bold text-xs py-2 rounded-xl text-center"
-            >
-              내 스타일 먼저
             </Link>
           </div>
         </div>
@@ -736,20 +723,12 @@ export default function Home() {
             <p className="text-white/60 text-xs mb-4 leading-relaxed">
               2가지 질문으로 여행 페르소나를 분석하고<br />맞춤 꿀팁 + 동행 메이트를 연결해드립니다
             </p>
-            <div className="flex gap-2">
-              <Link
-                to="/onboarding"
-                className="flex-1 flex items-center justify-center gap-1.5 bg-white text-indigo-700 font-extrabold text-xs py-2.5 rounded-xl shadow-md hover:bg-slate-100 transition-colors active:scale-95"
-              >
-                <Sparkles size={12} /> 스타일 진단 시작
-              </Link>
-              <Link
-                to="/companions"
-                className="flex-1 flex items-center justify-center gap-1.5 bg-white/15 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-white/20 transition-colors active:scale-95"
-              >
-                <Users size={12} /> 동행 찾기
-              </Link>
-            </div>
+            <Link
+              to="/travel"
+              className="flex items-center justify-center gap-2 w-full bg-white text-indigo-700 font-extrabold text-sm py-3 rounded-xl shadow-md hover:bg-slate-100 transition-colors active:scale-95"
+            >
+              <Sparkles size={14} /> 여행 계획 세우기
+            </Link>
           </div>
         </div>
         </motion.div>

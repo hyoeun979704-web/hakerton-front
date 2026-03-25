@@ -8,13 +8,13 @@ export default function Navbar() {
   const { t } = useApp();
 
   const leftItems = [
-    { path: '/',           icon: Home,   label: t.nav.home },
-    { path: '/situations', icon: MapPin, label: t.nav.live },
+    { path: '/',     icon: Home,   label: t.nav.home },
+    { path: '/live', icon: MapPin, label: t.nav.live },
   ];
 
   const rightItems = [
-    { path: '/companions', icon: Plane, label: t.nav.travel },
-    { path: '/mypage',     icon: User,  label: t.nav.mypage },
+    { path: '/travel', icon: Plane, label: t.nav.travel },
+    { path: '/mypage', icon: User,  label: t.nav.mypage },
   ];
 
   const NavItem = ({ path, icon: Icon, label }: { path: string; icon: typeof Home; label: string }) => {

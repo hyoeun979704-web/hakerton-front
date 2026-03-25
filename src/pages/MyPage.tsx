@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Globe, Moon, Sun, Bell, Info, ChevronRight,
-  Shield, FileText, User, Check
+  Shield, FileText, User, Check, Sparkles
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useApp, type Lang } from '../context/AppContext';
 
 const LANG_OPTIONS: { code: Lang; flag: string; label: string }[] = [
@@ -37,6 +38,23 @@ export default function MyPage() {
           </div>
           <ChevronRight size={18} className="text-slate-400 flex-shrink-0" />
         </div>
+      </div>
+
+      {/* Travel Style Button */}
+      <div className="px-6 mb-6">
+        <Link
+          to="/onboarding"
+          className="flex items-center gap-3 w-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl px-5 py-4 shadow-md shadow-blue-500/20 active:scale-[0.98] transition-transform"
+        >
+          <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+            <Sparkles size={18} className="text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="font-extrabold text-sm text-white">여행 스타일 탐색 다시하기</p>
+            <p className="text-[11px] text-white/65 mt-0.5">Retake Travel Style Quiz</p>
+          </div>
+          <ChevronRight size={16} className="text-white/60 flex-shrink-0" />
+        </Link>
       </div>
 
       {/* Language Section */}

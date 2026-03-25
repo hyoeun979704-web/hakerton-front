@@ -12,6 +12,8 @@ import Situations from './pages/Situations';
 import Companions from './pages/Companions';
 import Onboarding from './pages/Onboarding';
 import MyPage from './pages/MyPage';
+import Live from './pages/Live';
+import Travel from './pages/Travel';
 import './index.css';
 
 const FULLSCREEN_ROUTES = ['/chat'];
@@ -48,6 +50,8 @@ function AppShell() {
             <Route path="/companions" element={<Companions />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/mypage" element={<MyPage />} />
+            <Route path="/live" element={<Live />} />
+            <Route path="/travel" element={<Travel />} />
           </Routes>
         </main>
         <Navbar />
