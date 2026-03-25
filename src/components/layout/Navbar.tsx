@@ -8,8 +8,8 @@ export default function Navbar() {
   const { t } = useApp();
 
   const leftItems = [
-    { path: '/',           icon: Home,   label: t.nav.home },
-    { path: '/situations', icon: MapPin, label: t.nav.live },
+    { path: '/',     icon: Home,   label: t.nav.home },
+    { path: '/live', icon: MapPin, label: t.nav.live },
   ];
 
   const rightItems = [
