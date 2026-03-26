@@ -40,6 +40,13 @@ export default function Onboarding() {
     if (step < QUESTIONS.length - 1) {
       setTimeout(() => setStep(s => s + 1), 350);
     } else {
+      // Save style results to localStorage for home personalization
+      try {
+        localStorage.setItem('lf_style', JSON.stringify({
+          pace: newAnswers[1],   // 'slow' | 'fast'
+          night: newAnswers[2],  // 'food' | 'culture'
+        }));
+      } catch {}
       setTimeout(() => setDone(true), 400);
     }
   };

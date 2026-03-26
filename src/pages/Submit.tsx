@@ -1,14 +1,16 @@
-import { useState } from 'react';
-import { X, Sparkles, Check, ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Sparkles, Check, ChevronDown, Share2, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 
 type Category = 'Transport' | 'Food' | 'Culture' | 'Emergency' | 'Other';
 
+const DRAFT_KEY = 'lf_submit_draft';
+
 const MOCK_TRANSLATIONS: Record<string, { en: string; ja: string; zh: string }> = {
   default: {
-    en: "AI-translated version of your tip will appear here. The cultural nuances and local knowledge will be preserved and contextualized for international travelers.",
+    en: "AI-translated version of your tip will appear here. Cultural nuances and local knowledge will be preserved and contextualized for international travelers.",
     ja: "あなたのヒントのAI翻訳版がここに表示されます。文化的なニュアンスとローカルな知識が保持され、外国人旅行者向けに文脈化されます。",
     zh: "您的攻略的AI翻译版本将显示在这里。文化细节和本地知识将被保留，并为国际旅行者提供背景说明。",
   },
@@ -22,12 +24,21 @@ export default function Submit() {
   const navigate = useNavigate();
 
   const [category, setCategory] = useState<Category>('Food');
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState(() => {
+    try { return localStorage.getItem(DRAFT_KEY) ?? ''; } catch { return ''; }
+  });
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [aiTab, setAiTab] = useState<'EN' | 'JA' | 'ZH'>('EN');
   const [aiGenerated, setAiGenerated] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [posted, setPosted] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  // Auto-save draft
+  useEffect(() => {
+    try { localStorage.setItem(DRAFT_KEY, content); } catch {}
+  }, [content]);
 
   const categories = Object.keys(st.categories) as Category[];
   const canPost = content.length >= 20;
@@ -43,7 +54,21 @@ export default function Submit() {
   const handlePost = async () => {
     if (!canPost) return;
     setPosted(true);
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise(r => setTimeout(r, 900));
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    setShowShareModal(true);
+  };
+
+  const handleShareAndExit = async () => {
+    const text = `서울 꿀팁을 로컬리에 올렸어요! 🎉\n\n"${content.slice(0, 80)}..."\n\n로컬리 앱에서 더 많은 꿀팁을 확인하세요.`;
+    if (navigator.share) {
+      try { await navigator.share({ title: '내 꿀팁이 올라갔어요!', text }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(text);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+      return;
+    }
     navigate('/');
   };
 
@@ -51,21 +76,103 @@ export default function Submit() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0A0E] pt-14 pb-24">
+      {/* Post-submit share modal */}
+      <AnimatePresence>
+        {showShareModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-6"
+            >
+              {/* XP reward */}
+              <div className="flex justify-center mb-4">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.15 }}
+                  className="flex items-center gap-2 bg-amber-400/15 border border-amber-400/30 rounded-2xl px-5 py-2.5"
+                >
+                  <Zap size={18} className="text-amber-500 fill-amber-500" />
+                  <span className="font-extrabold text-amber-600 dark:text-amber-400 text-base">+50 XP 획득!</span>
+                  <span className="text-xs text-amber-500/70 font-medium">로컬 전문가 배지로 가는 길</span>
+                </motion.div>
+              </div>
+
+              <div className="text-center mb-6">
+                <div className="text-4xl mb-2">🎉</div>
+                <h2 className="font-extrabold text-lg text-slate-900 dark:text-white mb-1">
+                  꿀팁이 올라갔어요!
+                </h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  누군가의 여행이 더 즐거워질 거예요.<br />
+                  <span className="text-[11px]">Someone's trip just got better thanks to you.</span>
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={handleShareAndExit}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-extrabold text-sm py-3.5 rounded-2xl shadow-lg shadow-purple-500/25 active:scale-[0.98] transition-transform"
+                >
+                  {shareCopied
+                    ? <><Check size={16} /> 클립보드에 복사됨!</>
+                    : <><Share2 size={16} /> 인스타에 공유하기</>
+                  }
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="w-full py-3 text-sm font-semibold text-slate-500 dark:text-slate-400"
+                >
+                  홈으로 돌아가기
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="bg-white dark:bg-slate-900 px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <div>
           <h1 className="font-extrabold text-slate-900 dark:text-white text-lg leading-tight">{st.title}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{st.description}</p>
         </div>
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-        >
-          <X size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* XP badge preview */}
+          <div className="flex items-center gap-1 bg-amber-400/10 border border-amber-400/20 rounded-full px-2.5 py-1">
+            <Zap size={11} className="text-amber-500 fill-amber-500" />
+            <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400">+50 XP</span>
+          </div>
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
 
       <div className="px-4 py-5 space-y-5">
+        {/* Draft restored notice */}
+        {content.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-800/30 rounded-xl px-3 py-2"
+          >
+            <span className="text-[10px]">💾</span>
+            <p className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+              임시저장된 내용이 있어요 · Draft restored
+            </p>
+          </motion.div>
+        )}
+
         {/* Step 1: Category */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
@@ -162,10 +269,7 @@ export default function Submit() {
                       {st.aiGenerating}
                     </>
                   ) : (
-                    <>
-                      <Sparkles size={15} />
-                      {st.aiButton}
-                    </>
+                    <><Sparkles size={15} /> {st.aiButton}</>
                   )}
                 </button>
               </div>
@@ -207,13 +311,7 @@ export default function Submit() {
               : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
           }`}
         >
-          {posted ? (
-            <>
-              <Check size={18} /> {st.success}
-            </>
-          ) : (
-            st.post
-          )}
+          {posted ? <><Check size={18} /> {st.success}</> : st.post}
         </motion.button>
       </div>
     </div>

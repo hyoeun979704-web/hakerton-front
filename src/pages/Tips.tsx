@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Bookmark, Search, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
+import {
+  Heart, Bookmark, Search, ChevronDown, ChevronUp,
+  CheckCircle2, Share2, Check
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { TIPS, getSavedIds, toggleSaved, type TipCategory } from '../data/tips';
 import { useSearchParams } from 'react-router-dom';
@@ -16,25 +19,28 @@ export default function Tips() {
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
   const [savedIds, setSavedIds] = useState<Set<number>>(getSavedIds);
   const [searchQuery, setSearchQuery] = useState('');
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   const { t, lang } = useApp();
   const tt = t.tips;
 
-  const filteredTips = TIPS
-    .filter(tip => {
-      if (situationParam) return tip.situations.includes(situationParam);
-      if (activeCategory !== 'All' && tip.category !== activeCategory) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        return tip.titleKo.toLowerCase().includes(q) || tip.contentKo.toLowerCase().includes(q) || tip.contentEn.toLowerCase().includes(q);
-      }
-      return true;
-    });
+  const filteredTips = TIPS.filter(tip => {
+    if (situationParam) return tip.situations.includes(situationParam);
+    if (activeCategory !== 'All' && tip.category !== activeCategory) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return (
+        tip.titleKo.toLowerCase().includes(q) ||
+        tip.contentKo.toLowerCase().includes(q) ||
+        tip.contentEn.toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
 
   const toggleLike = (id: number) => {
     setLikedIds(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };
@@ -42,6 +48,27 @@ export default function Tips() {
   const handleSave = (id: number) => {
     toggleSaved(id);
     setSavedIds(getSavedIds());
+  };
+
+  const handleShare = async (tip: typeof TIPS[0]) => {
+    const text = `${tip.titleKo}\n\n${tip.contentEn}\n\n— 로컬리 (Locally) 서울 꿀팁`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: tip.titleKo, text, url: window.location.href });
+      } catch { /* user dismissed */ }
+    } else {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(tip.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
+  };
+
+  // Pick the right language content
+  const getContent = (tip: typeof TIPS[0]) => {
+    if (lang === 'ja') return tip.contentJa;
+    if (lang === 'zh') return tip.contentZh;
+    if (lang === 'ko') return tip.contentKo;
+    return tip.contentEn;
   };
 
   return (
@@ -97,16 +124,17 @@ export default function Tips() {
               const isExpanded = expandedId === tip.id;
               const isLiked = likedIds.has(tip.id);
               const isSaved = savedIds.has(tip.id);
-              const content = lang === 'ko' ? tip.contentKo : tip.contentEn;
+              const isCopied = copiedId === tip.id;
+              const content = getContent(tip);
               const isLong = content.length > 100;
 
               const categoryStyle =
-                tip.category === 'Food' ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400' :
+                tip.category === 'Food'      ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400' :
                 tip.category === 'Transport' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400' :
-                tip.category === 'Culture' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400' :
+                tip.category === 'Culture'   ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400' :
                 tip.category === 'Emergency' ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400' :
                 tip.category === 'Nightlife' ? 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-400' :
-                tip.category === 'Shopping' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' :
+                tip.category === 'Shopping'  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' :
                 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300';
 
               return (
@@ -136,33 +164,48 @@ export default function Tips() {
                     </div>
 
                     {/* Title */}
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-snug mb-1.5">{tip.titleKo}</h3>
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-snug mb-1.5">
+                      {tip.titleKo}
+                    </h3>
 
-                    {/* Content */}
+                    {/* Content — language-aware */}
                     <p className={`text-xs text-slate-600 dark:text-slate-400 leading-relaxed ${isExpanded || !isLong ? '' : 'line-clamp-2'}`}>
                       {content}
                     </p>
 
-                    {/* Bilingual toggle */}
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className="mt-2 bg-slate-50 dark:bg-slate-800 rounded-xl p-3"
-                      >
-                        <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 mb-1">{tt.translation}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed italic">
-                          {lang === 'ko' ? tip.contentEn : tip.contentKo}
-                        </p>
-                      </motion.div>
-                    )}
+                    {/* Expanded: cultural context box */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          key="ctx"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="mt-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30 rounded-xl p-3"
+                        >
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <span className="text-[10px]">✦</span>
+                            <p className="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                              문화 맥락 · Cultural Context
+                            </p>
+                          </div>
+                          <p className="text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
+                            {tip.culturalContext}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
                     {isLong && (
                       <button
                         onClick={() => setExpandedId(isExpanded ? null : tip.id)}
                         className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400"
                       >
-                        {isExpanded ? <><ChevronUp size={12} /> {tt.readLess}</> : <><ChevronDown size={12} /> {tt.readMore}</>}
+                        {isExpanded
+                          ? <><ChevronUp size={12} /> {tt.readLess}</>
+                          : <><ChevronDown size={12} /> {tt.readMore}</>
+                        }
                       </button>
                     )}
                   </div>
@@ -177,7 +220,7 @@ export default function Tips() {
                       <span className="text-[10px] text-slate-300 dark:text-slate-600">·</span>
                       <span className="text-[10px] text-slate-400 dark:text-slate-500">{tip.location}</span>
                     </div>
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-3">
                       <button
                         onClick={() => toggleLike(tip.id)}
                         className={`flex items-center gap-1 text-[11px] font-semibold transition-colors ${isLiked ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'}`}
@@ -191,8 +234,31 @@ export default function Tips() {
                       >
                         <Bookmark size={14} fill={isSaved ? 'currentColor' : 'none'} />
                       </button>
+                      {/* SNS Share */}
+                      <button
+                        onClick={() => handleShare(tip)}
+                        className={`transition-colors ${isCopied ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'}`}
+                      >
+                        {isCopied ? <Check size={14} /> : <Share2 size={14} />}
+                      </button>
                     </div>
                   </div>
+
+                  {/* Copied toast */}
+                  <AnimatePresence>
+                    {isCopied && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="px-4 pb-2.5"
+                      >
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold text-right">
+                          ✓ 클립보드에 복사됨 · Copied!
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.article>
               );
             })

@@ -24,7 +24,8 @@ const SECTION_META: Record<SectionId, { label: string; labelEn: string; icon: st
   companions: { label: '동행 미니카드',  labelEn: 'Travel Mates', icon: '👥' },
 };
 
-const DEFAULT_SECTION_ORDER: SectionId[] = ['categories', 'emergency', 'pick', 'live', 'travel', 'companions'];
+// categories + pick first — tips feed is the main feature (per feature spec P0 priority)
+const DEFAULT_SECTION_ORDER: SectionId[] = ['categories', 'pick', 'live', 'travel', 'companions', 'emergency'];
 const SETTINGS_KEY = 'lf_home_v3';
 
 interface HomeSettings { showHeadline: boolean; sectionOrder: SectionId[] }
@@ -95,6 +96,14 @@ const FEATURED_TRANSLATIONS: Record<LangKey, string> = {
   zh: '小菜（반찬）可以免费续加，这是韩餐厅的惯例。说"반찬 더 주세요"服务员就会高兴地帮您续加，完全不用不好意思。',
 };
 
+function loadStyle(): { pace: string; night: string } | null {
+  try {
+    const raw = localStorage.getItem('lf_style');
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return null;
+}
+
 export default function Home() {
   const { homeSettingsOpen, closeHomeSettings } = useApp();
 
@@ -104,6 +113,7 @@ export default function Home() {
   const [activePair, setActivePair] = useState(0);
   const [tipLang, setTipLang] = useState<LangKey>('ko');
   const [emergencySaved, setEmergencySaved] = useState(() => localStorage.getItem('lf_emergency_saved') === '1');
+  const [travelStyle] = useState(loadStyle);
 
   /* home settings state */
   const [settings, setSettings] = useState<HomeSettings>(loadSettings);
@@ -332,6 +342,36 @@ export default function Home() {
           </motion.section>
         )}
       </AnimatePresence>
+
+      {/* ══════════════════════════════════════
+          개인화 배너 (온보딩 완료 시)
+      ══════════════════════════════════════ */}
+      {travelStyle && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mx-4 mt-4"
+        >
+          <Link
+            to="/tips"
+            className="flex items-center gap-3 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/15 dark:to-purple-500/15 border border-indigo-200 dark:border-indigo-800/40 rounded-2xl px-4 py-3"
+          >
+            <span className="text-xl flex-shrink-0">
+              {travelStyle.night === 'food' ? '🍖' : '🏮'}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-extrabold text-indigo-700 dark:text-indigo-400">
+                {travelStyle.night === 'food' ? '맛집 & 식도락 꿀팁이 준비됐어요' : '야경 & 문화 꿀팁이 준비됐어요'}
+              </p>
+              <p className="text-[10px] text-indigo-500/70 dark:text-indigo-400/60 mt-0.5">
+                {travelStyle.night === 'food' ? 'Food & dining tips curated for you →' : 'Night culture tips curated for you →'}
+              </p>
+            </div>
+            <ChevronRight size={14} className="text-indigo-400 flex-shrink-0" />
+          </Link>
+        </motion.div>
+      )}
 
       {/* ══════════════════════════════════════
           섹션 목록 — settings.sectionOrder 순서대로 렌더링
