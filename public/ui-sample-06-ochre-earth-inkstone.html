@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>06 Ochre Earth & Ink Stone — 로컬리 UI Sample</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    background: #C4C4C2;
+    min-height: 100vh;
+    padding: 56px 40px;
+  }
+  .page-header { text-align: center; margin-bottom: 56px; }
+  .palette-chip { display: inline-flex; align-items: center; gap: 6px; background: #1a1a1a; color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 14px; }
+  .page-header h1 { font-size: 28px; font-weight: 900; color: #1a1a1a; letter-spacing: -0.8px; line-height: 1.1; margin-bottom: 8px; }
+  .page-header p { font-size: 13px; color: #555; letter-spacing: 0.2px; }
+  .page-header .concept { font-size: 12px; color: #888; margin-top: 4px; font-style: italic; }
+
+  .modes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 1100px; margin: 0 auto; }
+  .mode-section { display: flex; flex-direction: column; gap: 18px; }
+  .mode-label { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: #333; letter-spacing: 1px; text-transform: uppercase; }
+  .mode-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .mode-inner { display: flex; gap: 24px; align-items: flex-start; }
+
+  .swatches { display: flex; flex-direction: column; gap: 14px; flex-shrink: 0; width: 148px; }
+  .swatch-box { width: 130px; height: 70px; border-radius: 14px; margin-bottom: 7px; border: 1px solid rgba(0,0,0,0.07); box-shadow: 0 2px 8px rgba(0,0,0,0.09); }
+  .swatch-role { font-size: 10.5px; font-weight: 700; color: #222; }
+  .swatch-usage { font-size: 9px; color: #777; margin-top: 1px; }
+  .swatch-hex { font-size: 10px; color: #999; font-family: 'SF Mono', monospace; margin-top: 2px; }
+
+  .phone-wrap { flex: 1; display: flex; justify-content: center; }
+  .phone { width: 234px; height: 504px; border-radius: 40px; padding: 10px; position: relative; background: #111; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 0 0 3px rgba(0,0,0,0.55), 0 32px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07); }
+  .phone::before { content: ''; position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 78px; height: 22px; background: #111; border-radius: 12px; z-index: 10; }
+  .phone-screen { width: 100%; height: 100%; border-radius: 32px; overflow: hidden; display: flex; flex-direction: column; }
+
+  .app-statusbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 2px; font-size: 8px; font-weight: 800; flex-shrink: 0; }
+  .app-header { display: flex; align-items: center; justify-content: space-between; padding: 7px 13px; flex-shrink: 0; }
+  .app-logo { display: flex; align-items: center; gap: 6px; }
+  .app-logo-icon { width: 22px; height: 22px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; }
+  .app-logo-text { font-size: 13px; font-weight: 900; letter-spacing: -0.5px; }
+  .app-header-actions { display: flex; gap: 6px; }
+  .icon-btn { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+
+  .app-hero { padding: 12px 13px 14px; flex-shrink: 0; }
+  .app-hero-eyebrow { display: inline-flex; align-items: center; gap: 5px; font-size: 7.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; animation: pulse 1.8s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.45;} }
+  .app-hero-title { font-size: 19px; font-weight: 900; line-height: 1.2; letter-spacing: -0.7px; margin-bottom: 7px; }
+  .app-hero-sub { font-size: 8.5px; line-height: 1.65; margin-bottom: 12px; max-width: 155px; }
+  /* ⚠ CTA: ochre primary is mid-lightness → DARK text required for WCAG AA */
+  .app-cta-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 800; padding: 8px 16px; border-radius: 100px; letter-spacing: -0.1px; }
+
+  .app-cats { display: flex; gap: 5px; padding: 0 13px 10px; overflow: hidden; flex-shrink: 0; }
+  .cat-chip { font-size: 8px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+
+  .app-scroll { flex: 1; overflow: hidden; padding: 0 10px 6px; display: flex; flex-direction: column; gap: 8px; }
+
+  .tip-card { border-radius: 16px; padding: 11px 12px; border-width: 1px; border-style: solid; }
+  .tip-card-top { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
+  .tip-cat-badge { font-size: 7px; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+  .tip-expert-badge { font-size: 7px; font-weight: 700; padding: 2px 7px; border-radius: 20px; display: flex; align-items: center; gap: 2px; }
+  .tip-pick-badge { font-size: 7px; font-weight: 900; padding: 2px 7px; border-radius: 20px; margin-left: auto; letter-spacing: 0.5px; }
+  .tip-title { font-size: 10px; font-weight: 800; line-height: 1.35; margin-bottom: 5px; letter-spacing: -0.3px; }
+  .tip-content { font-size: 7.5px; line-height: 1.65; margin-bottom: 8px; }
+  .translate-tabs { display: flex; gap: 4px; margin-bottom: 6px; }
+  .translate-tab { font-size: 7px; font-weight: 800; padding: 2.5px 8px; border-radius: 20px; }
+  .translate-bar { border-radius: 10px; padding: 7px 10px; border-width: 1px; border-style: solid; margin-bottom: 8px; }
+  .translate-bar-label { font-size: 6.5px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
+  .translate-bar-text { font-size: 7.5px; line-height: 1.55; }
+  .tip-footer { display: flex; align-items: center; justify-content: space-between; }
+  .tip-author { display: flex; align-items: center; gap: 5px; }
+  .tip-avatar { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 800; color: #fff; }
+  .tip-author-name { font-size: 7.5px; font-weight: 600; }
+  .tip-actions { display: flex; align-items: center; gap: 10px; }
+  .tip-action { font-size: 7.5px; font-weight: 700; display: flex; align-items: center; gap: 2px; }
+
+  .app-navbar { display: flex; justify-content: space-around; align-items: center; padding: 8px 4px 10px; border-top-width: 1px; border-top-style: solid; flex-shrink: 0; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+  .nav-icon { width: 22px; height: 22px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .nav-icon.fab { width: 30px; height: 30px; border-radius: 50%; margin-bottom: 1px; font-size: 14px; font-weight: 900; }
+  .nav-label { font-size: 6.5px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="palette-chip">06 · Ochre Earth &amp; Ink Stone</div>
+  <h1>로컬리 앱 UI — 컬러 샘플</h1>
+  <p>Locally Seoul App · Light Mode &amp; Dark Mode</p>
+  <p class="concept">土と墨の間 — 한옥 마당의 아침, 황토 벽과 벼루 위 묵향 사이</p>
+</div>
+
+<div class="modes-grid">
+
+  <!-- ══ LIGHT MODE ══ -->
+  <div class="mode-section">
+    <div class="mode-label">
+      <div class="mode-dot" style="background:#f59e0b;box-shadow:0 0 0 3px #f59e0b33;"></div>
+      Light Mode
+    </div>
+    <div class="mode-inner">
+      <div class="swatches">
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#F3EDE4;"></div>
+          <div class="swatch-role">Background</div>
+          <div class="swatch-usage">한옥 내부, 생면(生綿)</div>
+          <div class="swatch-hex">#F3EDE4</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#E0D5C4;"></div>
+          <div class="swatch-role">Card / Surface</div>
+          <div class="swatch-usage">모래·황토 점토 톤</div>
+          <div class="swatch-hex">#E0D5C4</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#1F1B16;"></div>
+          <div class="swatch-role">Text Primary</div>
+          <div class="swatch-usage">농묵(濃墨), 제목·본문</div>
+          <div class="swatch-hex">#1F1B16</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#6E6355;"></div>
+          <div class="swatch-role">Text Secondary</div>
+          <div class="swatch-usage">오래된 나무, 보조 텍스트</div>
+          <div class="swatch-hex">#6E6355</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#C08B3E;border-color:rgba(0,0,0,0.1);"></div>
+          <div class="swatch-role">Primary ⚠ Dark Text</div>
+          <div class="swatch-usage">황토(黃土) — CTA 어두운 글자 필수</div>
+          <div class="swatch-hex">#C08B3E</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#4A4540;"></div>
+          <div class="swatch-role">Secondary</div>
+          <div class="swatch-usage">벼루(硯) 잉크스톤 — 뱃지</div>
+          <div class="swatch-hex">#4A4540</div>
+        </div>
+      </div>
+
+      <div class="phone-wrap"><div class="phone">
+        <div class="phone-screen" style="background:#F3EDE4;">
+          <div class="app-statusbar" style="color:#6E6355;"><span>9:41</span><span>●●● 🔋</span></div>
+
+          <div class="app-header" style="border-bottom:1px solid rgba(110,99,85,0.12);">
+            <div class="app-logo">
+              <!-- Logo: ochre + inkstone gradient, dark text on ochre chip  -->
+              <div class="app-logo-icon" style="background:linear-gradient(135deg,#C08B3E,#4A4540);color:#fff;">L</div>
+              <span class="app-logo-text" style="color:#1F1B16;">로컬리</span>
+            </div>
+            <div class="app-header-actions">
+              <div class="icon-btn" style="background:#E0D5C4;color:#6E6355;">JA</div>
+              <div class="icon-btn" style="background:#E0D5C4;color:#6E6355;">⚙</div>
+            </div>
+          </div>
+
+          <div class="app-hero" style="background:linear-gradient(168deg,#E0D5C4 0%,#e8ddd0 45%,#F3EDE4 100%);">
+            <div class="app-hero-eyebrow" style="color:#C08B3E;">
+              <div class="badge-dot" style="background:#C08B3E;"></div>Live · Seoul Now
+            </div>
+            <div class="app-hero-title" style="color:#1F1B16;">현지인 꿀팁,<br><span style="color:#C08B3E;">내 언어로</span> 바로</div>
+            <div class="app-hero-sub" style="color:#6E6355;">AI가 4개 국어로 실시간 번역해드려요</div>
+            <!-- ⚠ DARK text on ochre CTA — WCAG AA compliant -->
+            <div class="app-cta-btn" style="background:#C08B3E;color:#1F1B16;box-shadow:0 6px 18px rgba(192,139,62,0.35);">💬 꿀팁 물어보기</div>
+          </div>
+
+          <div class="app-cats" style="padding-top:10px;">
+            <!-- Active chip: inkstone bg for strong contrast without losing warmth -->
+            <div class="cat-chip" style="background:#4A4540;color:#F3EDE4;">🍜 음식</div>
+            <div class="cat-chip" style="background:#E0D5C4;color:#1F1B16;">🚇 교통</div>
+            <div class="cat-chip" style="background:#E0D5C4;color:#1F1B16;">🎎 문화</div>
+            <div class="cat-chip" style="background:#E0D5C4;color:#1F1B16;">🛍 쇼핑</div>
+          </div>
+
+          <div class="app-scroll">
+            <div class="tip-card" style="background:#E0D5C4;border-color:rgba(110,99,85,0.14);box-shadow:0 3px 14px rgba(31,27,22,0.08);">
+              <div class="tip-card-top">
+                <div class="tip-cat-badge" style="background:rgba(192,139,62,0.16);color:#8a5e1a;">음식</div>
+                <div class="tip-expert-badge" style="background:rgba(74,69,64,0.12);color:#4A4540;">✓ 로컬</div>
+                <!-- Inkstone PICK badge: dignified, calligraphic  -->
+                <div class="tip-pick-badge" style="background:#4A4540;color:#F3EDE4;">PICK</div>
+              </div>
+              <div class="tip-title" style="color:#1F1B16;">반찬은 무한 리필, 눈치 보지 마세요</div>
+              <!-- Active translate tab: ochre with dark text -->
+              <div class="translate-tabs">
+                <div class="translate-tab" style="background:#C08B3E;color:#1F1B16;">JA</div>
+                <div class="translate-tab" style="background:rgba(110,99,85,0.15);color:#6E6355;">EN</div>
+                <div class="translate-tab" style="background:rgba(110,99,85,0.15);color:#6E6355;">ZH</div>
+              </div>
+              <div class="translate-bar" style="background:rgba(74,69,64,0.07);border-color:rgba(74,69,64,0.18);">
+                <div class="translate-bar-label" style="color:#4A4540;">✦ Cultural Context</div>
+                <div class="translate-bar-text" style="color:#6E6355;">小鉢は何度でも無料でお代わりできます。遠慮せず「반찬 더 주세요」と。</div>
+              </div>
+              <div class="tip-footer">
+                <div class="tip-author">
+                  <div class="tip-avatar" style="background:linear-gradient(135deg,#10b981,#0d9488);">박</div>
+                  <span class="tip-author-name" style="color:#6E6355;">박지현 · 서울</span>
+                </div>
+                <div class="tip-actions">
+                  <!-- Heart in ochre: earth warmth -->
+                  <div class="tip-action" style="color:#C08B3E;">♥ 428</div>
+                  <div class="tip-action" style="color:#6E6355;">🔖</div>
+                  <div class="tip-action" style="color:#6E6355;">↗</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tip-card" style="background:#E0D5C4;border-color:rgba(110,99,85,0.14);box-shadow:0 3px 14px rgba(31,27,22,0.08);">
+              <div class="tip-card-top">
+                <div class="tip-cat-badge" style="background:rgba(74,69,64,0.14);color:#4A4540;">교통</div>
+              </div>
+              <div class="tip-title" style="color:#1F1B16;">T머니 충전은 역 안 편의점에서</div>
+              <div class="tip-content" style="color:#6E6355;">GS25, CU가 창구보다 훨씬 빠릅니다. 버스·지하철 모두 사용 가능해요.</div>
+              <div class="tip-footer">
+                <div class="tip-author">
+                  <div class="tip-avatar" style="background:linear-gradient(135deg,#3b82f6,#6366f1);">김</div>
+                  <span class="tip-author-name" style="color:#6E6355;">김민준 · 서울</span>
+                </div>
+                <div class="tip-actions">
+                  <div class="tip-action" style="color:#6E6355;">♥ 342</div>
+                  <div class="tip-action" style="color:#6E6355;">🔖</div>
+                  <div class="tip-action" style="color:#6E6355;">↗</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="app-navbar" style="background:#F3EDE4;border-top-color:rgba(110,99,85,0.1);">
+            <!-- Active icon: ochre color only -->
+            <div class="nav-item"><div class="nav-icon" style="color:#C08B3E;">🏠</div><span class="nav-label" style="color:#C08B3E;">홈</span></div>
+            <div class="nav-item"><div class="nav-icon" style="color:#6E6355;">📡</div><span class="nav-label" style="color:#6E6355;">실시간</span></div>
+            <!-- FAB: ochre bg, dark text -->
+            <div class="nav-item"><div class="nav-icon fab" style="background:#C08B3E;color:#1F1B16;">+</div><span class="nav-label" style="color:#6E6355;">제출</span></div>
+            <div class="nav-item"><div class="nav-icon" style="color:#6E6355;">✈️</div><span class="nav-label" style="color:#6E6355;">여행</span></div>
+            <div class="nav-item"><div class="nav-icon" style="color:#6E6355;">👤</div><span class="nav-label" style="color:#6E6355;">마이</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ══ DARK MODE ══ -->
+  <div class="mode-section">
+    <div class="mode-label">
+      <div class="mode-dot" style="background:#475569;box-shadow:0 0 0 3px #47556933;"></div>
+      Dark Mode
+    </div>
+    <div class="mode-inner">
+      <div class="swatches">
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#141210;border-color:rgba(255,255,255,0.09);"></div>
+          <div class="swatch-role">Background</div>
+          <div class="swatch-usage">흙-블랙, 기름진 검은 토양</div>
+          <div class="swatch-hex">#141210</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#262220;border-color:rgba(255,255,255,0.07);"></div>
+          <div class="swatch-role">Card / Surface</div>
+          <div class="swatch-usage">숯(炭) 다크 브라운</div>
+          <div class="swatch-hex">#262220</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#EDE6DA;"></div>
+          <div class="swatch-role">Text Primary</div>
+          <div class="swatch-usage">양피지 화이트</div>
+          <div class="swatch-hex">#EDE6DA</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#968D7F;"></div>
+          <div class="swatch-role">Text Secondary</div>
+          <div class="swatch-usage">따뜻한 미드그레이</div>
+          <div class="swatch-hex">#968D7F</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#D9A34E;border-color:rgba(0,0,0,0.1);"></div>
+          <div class="swatch-role">Primary ⚠ Dark Text</div>
+          <div class="swatch-usage">밝은 황토 — CTA 어두운 글자</div>
+          <div class="swatch-hex">#D9A34E</div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-box" style="background:#847D75;"></div>
+          <div class="swatch-role">Secondary</div>
+          <div class="swatch-usage">밝은 잉크스톤 — 뱃지</div>
+          <div class="swatch-hex">#847D75</div>
+        </div>
+      </div>
+
+      <div class="phone-wrap"><div class="phone">
+        <div class="phone-screen" style="background:#141210;">
+          <div class="app-statusbar" style="color:#968D7F;"><span>9:41</span><span>●●● 🔋</span></div>
+
+          <div class="app-header" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div class="app-logo">
+              <div class="app-logo-icon" style="background:linear-gradient(135deg,#D9A34E,#847D75);color:#141210;">L</div>
+              <span class="app-logo-text" style="color:#EDE6DA;">로컬리</span>
+            </div>
+            <div class="app-header-actions">
+              <div class="icon-btn" style="background:#262220;color:#968D7F;">JA</div>
+              <div class="icon-btn" style="background:#262220;color:#968D7F;">⚙</div>
+            </div>
+          </div>
+
+          <div class="app-hero" style="background:linear-gradient(168deg,rgba(38,34,32,0.97) 0%,rgba(20,18,16,0.5) 55%,transparent 100%);">
+            <div class="app-hero-eyebrow" style="color:#D9A34E;">
+              <div class="badge-dot" style="background:#D9A34E;"></div>Live · Seoul Now
+            </div>
+            <div class="app-hero-title" style="color:#EDE6DA;">현지인 꿀팁,<br><span style="background:linear-gradient(90deg,#D9A34E,#847D75);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">내 언어로</span> 바로</div>
+            <div class="app-hero-sub" style="color:#968D7F;">AI가 4개 국어로 실시간 번역해드려요</div>
+            <!-- ⚠ DARK text on ochre CTA in dark mode too -->
+            <div class="app-cta-btn" style="background:#D9A34E;color:#141210;box-shadow:0 6px 22px rgba(217,163,78,0.4);">💬 꿀팁 물어보기</div>
+          </div>
+
+          <div class="app-cats" style="padding-top:10px;">
+            <div class="cat-chip" style="background:#D9A34E;color:#141210;">🍜 음식</div>
+            <div class="cat-chip" style="background:#262220;color:#968D7F;">🚇 교통</div>
+            <div class="cat-chip" style="background:#262220;color:#968D7F;">🎎 문화</div>
+            <div class="cat-chip" style="background:#262220;color:#968D7F;">🛍 쇼핑</div>
+          </div>
+
+          <div class="app-scroll">
+            <div class="tip-card" style="background:#262220;border-color:rgba(255,255,255,0.07);box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+              <div class="tip-card-top">
+                <div class="tip-cat-badge" style="background:rgba(217,163,78,0.18);color:#D9A34E;">음식</div>
+                <div class="tip-expert-badge" style="background:rgba(132,125,117,0.15);color:#847D75;">✓ 로컬</div>
+                <div class="tip-pick-badge" style="background:#847D75;color:#141210;">PICK</div>
+              </div>
+              <div class="tip-title" style="color:#EDE6DA;">반찬은 무한 리필, 눈치 보지 마세요</div>
+              <!-- Active tab: ochre with dark text -->
+              <div class="translate-tabs">
+                <div class="translate-tab" style="background:#D9A34E;color:#141210;">JA</div>
+                <div class="translate-tab" style="background:rgba(255,255,255,0.07);color:#968D7F;">EN</div>
+                <div class="translate-tab" style="background:rgba(255,255,255,0.07);color:#968D7F;">ZH</div>
+              </div>
+              <div class="translate-bar" style="background:rgba(132,125,117,0.1);border-color:rgba(132,125,117,0.22);">
+                <div class="translate-bar-label" style="color:#847D75;">✦ Cultural Context</div>
+                <div class="translate-bar-text" style="color:#968D7F;">小鉢は何度でも無料でお代わりできます。遠慮せず「반찬 더 주세요」と。</div>
+              </div>
+              <div class="tip-footer">
+                <div class="tip-author">
+                  <div class="tip-avatar" style="background:linear-gradient(135deg,#10b981,#0d9488);">박</div>
+                  <span class="tip-author-name" style="color:#968D7F;">박지현 · 서울</span>
+                </div>
+                <div class="tip-actions">
+                  <div class="tip-action" style="color:#D9A34E;">♥ 428</div>
+                  <div class="tip-action" style="color:#968D7F;">🔖</div>
+                  <div class="tip-action" style="color:#968D7F;">↗</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tip-card" style="background:#262220;border-color:rgba(255,255,255,0.07);box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+              <div class="tip-card-top">
+                <div class="tip-cat-badge" style="background:rgba(132,125,117,0.15);color:#847D75;">교통</div>
+              </div>
+              <div class="tip-title" style="color:#EDE6DA;">T머니 충전은 역 안 편의점에서</div>
+              <div class="tip-content" style="color:#968D7F;">GS25, CU가 창구보다 훨씬 빠릅니다. 버스·지하철 모두 사용 가능해요.</div>
+              <div class="tip-footer">
+                <div class="tip-author">
+                  <div class="tip-avatar" style="background:linear-gradient(135deg,#3b82f6,#6366f1);">김</div>
+                  <span class="tip-author-name" style="color:#968D7F;">김민준 · 서울</span>
+                </div>
+                <div class="tip-actions">
+                  <div class="tip-action" style="color:#968D7F;">♥ 342</div>
+                  <div class="tip-action" style="color:#968D7F;">🔖</div>
+                  <div class="tip-action" style="color:#968D7F;">↗</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="app-navbar" style="background:#141210;border-top-color:rgba(255,255,255,0.06);">
+            <div class="nav-item"><div class="nav-icon" style="color:#D9A34E;">🏠</div><span class="nav-label" style="color:#D9A34E;">홈</span></div>
+            <div class="nav-item"><div class="nav-icon" style="color:#968D7F;">📡</div><span class="nav-label" style="color:#968D7F;">실시간</span></div>
+            <div class="nav-item"><div class="nav-icon fab" style="background:#D9A34E;color:#141210;">+</div><span class="nav-label" style="color:#968D7F;">제출</span></div>
+            <div class="nav-item"><div class="nav-icon" style="color:#968D7F;">✈️</div><span class="nav-label" style="color:#968D7F;">여행</span></div>
+            <div class="nav-item"><div class="nav-icon" style="color:#968D7F;">👤</div><span class="nav-label" style="color:#968D7F;">마이</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
